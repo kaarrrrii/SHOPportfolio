@@ -1,3 +1,5 @@
+'use client';
+
 type MerchFiltersProps = {
   activeFilter?: string;
   onFilterChange?: (filter: string) => void;
