@@ -21,6 +21,7 @@ export default async function AdminShowcaseProductPage({
       initialProduct={product}
       catalogHref="/admin/showcase"
       productHrefBase="/admin/showcase"
+      fakeActions
     />
   );
 }

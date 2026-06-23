@@ -7,14 +7,14 @@ export function pluralizeCoins(value: number) {
   const mod100 = value % 100;
 
   if (mod10 === 1 && mod100 !== 11) {
-    return "монетка";
+    return "балл";
   }
 
   if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) {
-    return "монетки";
+    return "балла";
   }
 
-  return "монеток";
+  return "баллов";
 }
 
 export function formatCoinsLabel(value: number) {

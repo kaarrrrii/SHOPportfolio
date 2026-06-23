@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import type { Student } from "@/shared/data/mock";
+import { getStudentTotalPoints, type Student } from "@/shared/data/mock";
 import { formatCoins } from "@/shared/lib/format";
 
 type TopStudentsWidgetProps = {
@@ -81,7 +81,7 @@ export default function TopStudentsWidget({ students }: TopStudentsWidgetProps) 
           студентов
         </h1>
         <p className="mx-auto mt-6 max-w-[680px] text-[17px] font-semibold leading-[1.45] text-[#303030] [font-family:var(--font-montserrat-alt)] md:text-[20px]">
-          Рейтинг самых активных студентов проекта «Зажигай». Участвуй в мероприятиях, предлагай идеи и зарабатывай монетки!
+          Рейтинг самых активных студентов проекта «Зажигай». Участвуй в мероприятиях, предлагай идеи и зарабатывай баллы!
         </p>
       </section>
 
@@ -120,6 +120,7 @@ function RatingRow({ student }: RatingRowProps) {
   const isTopThree = student.rank <= 3;
   const themeName = getRowThemeName(student.rank);
   const theme = rowTheme[themeName];
+  const totalPoints = getStudentTotalPoints(student);
 
   return (
     <Link
@@ -145,17 +146,17 @@ function RatingRow({ student }: RatingRowProps) {
       <span className={`mx-3 hidden min-w-[136px] rounded-[10px] px-4 py-2 text-center font-black leading-none text-white [font-family:var(--font-unbounded)] md:block ${
         isTopThree ? `${theme.score} text-[25px]` : `${theme.score} text-[20px]`
       }`}>
-        {formatCoins(student.coins)}
+        {formatCoins(totalPoints)}
       </span>
 
       <span className="hidden text-left text-[12px] font-black uppercase text-[#111] [font-family:var(--font-montserrat-alt)] md:block">
-        монет
+        баллов
       </span>
 
       <DecorCell colorClass={theme.text} alignRight variant="flowers" />
 
       <span className={`col-span-2 col-start-2 px-4 pb-4 text-left text-[14px] font-black ${theme.text} [font-family:var(--font-unbounded)] md:hidden`}>
-        {formatCoins(student.coins)} монет
+        {formatCoins(totalPoints)} баллов
       </span>
     </Link>
   );

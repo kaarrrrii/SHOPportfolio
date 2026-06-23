@@ -33,6 +33,8 @@ export type OrderItem = {
 export type Order = {
   id: string;
   createdAt: string;
+  studentName: string;
+  studentGroup: string;
   status: string;
   total: number;
   pickup: string;
@@ -47,6 +49,7 @@ export type Student = {
   faculty: string;
   group: string;
   coins: number;
+  totalEarnedPoints: number;
   status: string;
   bio: string;
   accentColor: "pink" | "blue" | "green" | "cyan" | "violet";
@@ -194,6 +197,8 @@ export const orderHistory: Order[] = [
   {
     id: "ZG-2026-041",
     createdAt: "15 мая 2026",
+    studentName: "Смирнова Анна Андреевна",
+    studentGroup: "24АС-1",
     status: "Готов к выдаче",
     total: 759,
     pickup: FIXED_PICKUP_INFO,
@@ -206,6 +211,8 @@ export const orderHistory: Order[] = [
   {
     id: "ZG-2026-038",
     createdAt: "28 апреля 2026",
+    studentName: "Смирнова Анна Андреевна",
+    studentGroup: "24АС-1",
     status: "Получен",
     total: 305,
     pickup: FIXED_PICKUP_INFO,
@@ -226,6 +233,7 @@ const featuredStudents: Student[] = [
     faculty: "Институт математики и ИТ",
     group: "22ПИ-1",
     coins: 1280,
+    totalEarnedPoints: 1280,
     status: "Лидер месяца",
     bio: "Запускает студенческие инициативы, ведет команды на событиях и помогает новичкам быстро включаться в проект.",
     accentColor: "pink",
@@ -241,6 +249,7 @@ const featuredStudents: Student[] = [
     faculty: "Факультет экономики",
     group: "23ЭК-2",
     coins: 1000,
+    totalEarnedPoints: 1000,
     status: "Амбассадор проекта",
     bio: "Отвечает за коммуникации, помогает оформлять идеи и регулярно привлекает партнеров к студенческим событиям.",
     accentColor: "green",
@@ -256,6 +265,7 @@ const featuredStudents: Student[] = [
     faculty: "Юридический факультет",
     group: "21ЮР-4",
     coins: 700,
+    totalEarnedPoints: 700,
     status: "Автор идей",
     bio: "Превращает сложные предложения в понятные заявки и помогает участникам доводить идеи до запуска.",
     accentColor: "violet",
@@ -271,6 +281,7 @@ const featuredStudents: Student[] = [
     faculty: "Факультет энергетики",
     group: "22ЭН-3",
     coins: 500,
+    totalEarnedPoints: 500,
     status: "Техническая опора",
     bio: "Настраивает площадки, помогает с техникой и отвечает за спокойный запуск событий без суеты.",
     accentColor: "cyan",
@@ -286,6 +297,7 @@ const featuredStudents: Student[] = [
     faculty: "Архитектурно-строительный факультет",
     group: "24АС-1",
     coins: 450,
+    totalEarnedPoints: 450,
     status: "Дизайн и забота",
     bio: "Делает визуальные материалы, собирает атмосферу мероприятий и следит, чтобы участникам было удобно.",
     accentColor: "violet",
@@ -301,6 +313,7 @@ const featuredStudents: Student[] = [
     faculty: "Филологический факультет",
     group: "23ФЛ-2",
     coins: 200,
+    totalEarnedPoints: 200,
     status: "Голос команды",
     bio: "Пишет тексты, берет интервью у участников и помогает проекту говорить живым языком.",
     accentColor: "cyan",
@@ -316,6 +329,7 @@ const featuredStudents: Student[] = [
     faculty: "Институт управления",
     group: "22ГУ-1",
     coins: 180,
+    totalEarnedPoints: 180,
     status: "Координатор смен",
     bio: "Расставляет роли на событиях и быстро закрывает организационные вопросы на площадке.",
     accentColor: "green",
@@ -331,6 +345,7 @@ const featuredStudents: Student[] = [
     faculty: "Факультет транспорта",
     group: "21ТР-2",
     coins: 160,
+    totalEarnedPoints: 160,
     status: "Логистика",
     bio: "Помогает доставлять материалы, встречать гостей и держать маршрут события под контролем.",
     accentColor: "blue",
@@ -346,6 +361,7 @@ const featuredStudents: Student[] = [
     faculty: "Химико-биологический факультет",
     group: "24ХБ-3",
     coins: 120,
+    totalEarnedPoints: 120,
     status: "Новый активист",
     bio: "Быстро включилась в проект, помогает на событиях и предлагает свежие форматы для командных встреч.",
     accentColor: "violet",
@@ -361,13 +377,14 @@ const featuredStudents: Student[] = [
     faculty: "Исторический факультет",
     group: "25ИС-1",
     coins: 1,
+    totalEarnedPoints: 1,
     status: "Первый шаг",
     bio: "Только присоединился к проекту и уже сделал первое доброе дело.",
     accentColor: "cyan",
     stats: { events: 1, ideas: 0, volunteerHours: 2 },
     achievements: ["Помог команде на регистрации"],
     badges: ["Новичок"],
-    lastActivity: "Получил первую монетку",
+    lastActivity: "Получил первый балл",
   },
 ];
 
@@ -486,14 +503,15 @@ function buildGeneratedStudent(rank: number): Student {
     faculty,
     group: `${21 + (rank % 5)}-${rank % 2 === 0 ? "ПР" : "АК"}-${(rank % 4) + 1}`,
     coins,
+    totalEarnedPoints: coins,
     status,
-    bio: "Участник топ-100 проекта: помогает на событиях, берет задачи в команде и зарабатывает монетки за вклад в студенческую среду.",
+    bio: "Участник топ-100 проекта: помогает на событиях, берет задачи в команде и зарабатывает баллы за вклад в студенческую среду.",
     accentColor,
     stats: { events, ideas, volunteerHours },
     achievements: [
       "Участвовал в студенческом событии проекта",
       "Помог команде закрыть организационную задачу",
-      "Получил монетки за активность и инициативность",
+      "Получил баллы за активность и инициативность",
     ],
     badges: [status, "Топ-100"],
     lastActivity: "Отметился в рейтинге активности проекта",
@@ -508,7 +526,19 @@ export const students: Student[] = [
   ...featuredStudents.filter((student) => student.rank < 10),
   ...generatedTopStudents,
   ...featuredStudents.filter((student) => student.rank === 100),
-].sort((first, second) => first.rank - second.rank);
+]
+  .sort((first, second) =>
+    second.totalEarnedPoints - first.totalEarnedPoints ||
+    first.name.localeCompare(second.name, "ru"),
+  )
+  .map((student, index) => ({
+    ...student,
+    rank: index + 1,
+  }));
+
+export function getStudentTotalPoints(student: Pick<Student, "coins" | "totalEarnedPoints">) {
+  return student.totalEarnedPoints;
+}
 
 export function getProductBySlug(slug: string) {
   return products.find((product) => product.slug === slug);

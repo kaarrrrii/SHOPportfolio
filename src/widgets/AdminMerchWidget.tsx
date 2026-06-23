@@ -4,8 +4,9 @@ import type { ChangeEvent, FormEvent } from "react";
 import { useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import type { Product, ProductCategory, ProductSizeStock } from "@/shared/data/mock";
-import { authorizeAdminDemo, useAdminAuth } from "@/shared/lib/auth";
+import { authorizeByCredentials, useAdminAuth } from "@/shared/lib/auth";
 import { formatCoinsLabel } from "@/shared/lib/format";
 import {
   createMerchProductSlug,
@@ -39,6 +40,12 @@ type ProductFormState = {
   sizes: ProductFormSize[];
 };
 
+type PendingStatusChange = {
+  orderId: string;
+  currentStatus: OrderStatus;
+  nextStatus: OrderStatus;
+};
+
 let sizeRowSeed = 0;
 
 export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidgetProps) {
@@ -51,6 +58,7 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
   const [editingSlug, setEditingSlug] = useState("");
   const [message, setMessage] = useState("");
   const [categoryDraft, setCategoryDraft] = useState("");
+  const [pendingStatusChange, setPendingStatusChange] = useState<PendingStatusChange | null>(null);
   const activeFormCategory = categories.some((category) => category.value === form.category)
     ? form.category
     : firstCategory;
@@ -202,14 +210,17 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
       return;
     }
 
-    const confirmed = window.confirm(`Изменить статус заказа ${orderId} с "${currentStatus}" на "${nextStatus}"?`);
+    setPendingStatusChange({ orderId, currentStatus, nextStatus });
+  }
 
-    if (!confirmed) {
+  function applyPendingOrderStatus() {
+    if (!pendingStatusChange) {
       return;
     }
 
-    setOrderStatus(orderId, nextStatus);
-    setMessage(`Статус заказа ${orderId}: ${nextStatus}`);
+    setOrderStatus(pendingStatusChange.orderId, pendingStatusChange.nextStatus);
+    setMessage(`Статус обновлен: ${pendingStatusChange.nextStatus}`);
+    setPendingStatusChange(null);
   }
 
   return (
@@ -234,7 +245,7 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
 
         {section === "merch" ? (
         <>
-        <section className="grid gap-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(360px,1fr)]">
+        <section className="grid gap-6 xl:grid-cols-[minmax(360px,0.78fr)_minmax(0,1.22fr)]">
           <form
             onSubmit={handleSubmit}
             className="min-w-0 rounded-[18px] bg-white p-4 shadow-[0_12px_34px_rgba(0,0,0,0.08)] sm:rounded-[22px] sm:p-5 md:p-6"
@@ -356,12 +367,6 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
                 Выдача
               </h2>
             </div>
-            <Link
-              href="/orders"
-              className="inline-flex h-11 w-full items-center justify-center rounded-[10px] border border-[#d8d8d8] bg-white px-4 text-[14px] font-black text-[#111] transition hover:border-[#7B5BC8] hover:text-[#6A4FAD] sm:w-auto [font-family:var(--font-montserrat-alt)]"
-            >
-              История заказов
-            </Link>
           </div>
 
           <div className="grid gap-4">
@@ -374,16 +379,23 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="break-words text-[13px] font-black uppercase text-[#777] [font-family:var(--font-montserrat-alt)]">
-                          {order.id} · {order.createdAt}
+                        <p className="text-[12px] font-black uppercase text-[#7B5BC8] [font-family:var(--font-montserrat-alt)]">
+                          Студент
                         </p>
                         <h3 className="mt-1 text-[20px] font-black text-[#111] [font-family:var(--font-unbounded)] sm:text-[24px]">
-                          {order.status}
+                          {order.studentName}
                         </h3>
+                        <p className="mt-1 text-[14px] font-black text-[#555] [font-family:var(--font-montserrat-alt)]">
+                          {order.studentGroup}
+                        </p>
                       </div>
-                      <p className="w-full rounded-[12px] bg-white px-4 py-2 text-[18px] font-black text-[#111] shadow-[0_4px_14px_rgba(0,0,0,0.06)] sm:w-auto [font-family:var(--font-unbounded)]">
-                        {formatCoinsLabel(order.total)}
-                      </p>
+                    </div>
+
+                    <div className="mt-4 grid gap-2 sm:grid-cols-4">
+                      <OrderInfoTile label="Дата" value={order.createdAt} />
+                      <OrderInfoTile label="Выдача" value={order.pickup} />
+                      <OrderInfoTile label="Статус" value={order.status} />
+                      <OrderInfoTile label="Списано" value={formatCoinsLabel(order.total)} />
                     </div>
 
                     <div className="mt-4 grid gap-2">
@@ -424,11 +436,41 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
         </section>
         ) : null}
       </div>
+
+      <ConfirmDialog
+        isOpen={pendingStatusChange !== null}
+        title="Изменить статус?"
+        description={
+          pendingStatusChange
+            ? `${pendingStatusChange.currentStatus} -> ${pendingStatusChange.nextStatus}.`
+            : ""
+        }
+        confirmLabel="Подтвердить"
+        onConfirm={applyPendingOrderStatus}
+        onCancel={() => setPendingStatusChange(null)}
+      />
     </main>
   );
 }
 
 function AdminAuthGate() {
+  const [login, setLogin] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
+
+  function handleLoginSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const role = authorizeByCredentials(login, password);
+
+    if (role !== "admin") {
+      setLoginError("Нужна учетная запись администратора");
+      return;
+    }
+
+    setLoginError("");
+  }
+
   return (
     <main className="admin-page bg-white">
       <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-5 sm:py-10 md:px-8 md:py-14">
@@ -439,15 +481,38 @@ function AdminAuthGate() {
           <p className="mx-auto mt-4 max-w-[520px] text-[16px] font-semibold leading-[1.45] text-[#555] [font-family:var(--font-montserrat-alt)]">
             Управление мерчем доступно только администратору.
           </p>
-          <div className="mt-6 flex justify-center">
+          <form onSubmit={handleLoginSubmit} className="mx-auto mt-6 grid max-w-[420px] gap-4 text-left">
+            <label className="grid gap-2 text-[13px] font-black uppercase text-[#555] [font-family:var(--font-montserrat-alt)]">
+              Логин
+              <input
+                value={login}
+                onChange={(event) => setLogin(event.target.value)}
+                autoComplete="username"
+                className="h-12 rounded-[10px] border border-[#dedede] bg-[#fbfbfb] px-4 text-[15px] font-bold normal-case text-[#111] outline-none transition focus:border-[#7B5BC8] focus:bg-white [font-family:var(--font-montserrat-alt)]"
+              />
+            </label>
+            <label className="grid gap-2 text-[13px] font-black uppercase text-[#555] [font-family:var(--font-montserrat-alt)]">
+              Пароль
+              <input
+                type="password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
+                className="h-12 rounded-[10px] border border-[#dedede] bg-[#fbfbfb] px-4 text-[15px] font-bold normal-case text-[#111] outline-none transition focus:border-[#7B5BC8] focus:bg-white [font-family:var(--font-montserrat-alt)]"
+              />
+            </label>
+            {loginError ? (
+              <p className="rounded-[10px] bg-[#FFF0F6] px-4 py-3 text-[13px] font-black text-[#E82E78] [font-family:var(--font-montserrat-alt)]">
+                {loginError}
+              </p>
+            ) : null}
             <button
-              type="button"
-              onClick={authorizeAdminDemo}
+              type="submit"
               className="inline-flex h-12 w-full items-center justify-center rounded-[10px] bg-[#7B5BC8] px-6 text-[15px] font-black text-white shadow-[0_10px_22px_rgba(123,91,200,0.22)] transition hover:bg-[#6748B4] sm:w-auto [font-family:var(--font-montserrat-alt)]"
             >
-              Войти как администратор
+              Войти
             </button>
-          </div>
+          </form>
         </section>
       </div>
     </main>
@@ -466,6 +531,24 @@ function MetricTile({ label, value }: MetricTileProps) {
         {label}
       </p>
       <p className="mt-1 break-words text-[28px] font-black text-[#111] [font-family:var(--font-unbounded)] sm:text-[30px]">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+type OrderInfoTileProps = {
+  label: string;
+  value: string;
+};
+
+function OrderInfoTile({ label, value }: OrderInfoTileProps) {
+  return (
+    <div className="min-w-0 rounded-[12px] bg-white px-3 py-2 shadow-[0_4px_14px_rgba(0,0,0,0.04)]">
+      <p className="text-[10px] font-black uppercase text-[#777] [font-family:var(--font-montserrat-alt)]">
+        {label}
+      </p>
+      <p className="mt-1 break-words text-[12px] font-black leading-[1.25] text-[#111] [font-family:var(--font-montserrat-alt)]">
         {value}
       </p>
     </div>
@@ -1119,17 +1202,8 @@ function OrderStatusControl({ orderId, status, onConfirm }: OrderStatusControlPr
 
   return (
     <div className="rounded-[16px] bg-white p-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[12px] font-black uppercase text-[#777] [font-family:var(--font-montserrat-alt)]">
-          Статус заказа
-        </p>
-        <span className={`rounded-[999px] px-3 py-1 text-[12px] font-black text-white [font-family:var(--font-montserrat-alt)] ${getOrderStatusTheme(status).solid}`}>
-          {status}
-        </span>
-      </div>
-
-      <label className="mt-4 grid gap-2 text-[12px] font-black uppercase text-[#777] [font-family:var(--font-montserrat-alt)]">
-        Новый статус
+      <label className="grid gap-2 text-[12px] font-black uppercase text-[#777] [font-family:var(--font-montserrat-alt)]">
+        Сменить статус
         <select
           value={selectedStatus}
           onChange={(event) => setSelectedStatus(event.target.value as OrderStatus)}
@@ -1157,22 +1231,4 @@ function OrderStatusControl({ orderId, status, onConfirm }: OrderStatusControlPr
 
 function getSafeOrderStatus(status: string): OrderStatus {
   return ORDER_STATUSES.find((statusItem) => statusItem === status) || "Оформлен";
-}
-
-function getOrderStatusTheme(status: OrderStatus | string) {
-  if (status === "Готов к выдаче") {
-    return {
-      solid: "bg-[#B8CB2F]",
-    };
-  }
-
-  if (status === "Получен") {
-    return {
-      solid: "bg-[#335EC8]",
-    };
-  }
-
-  return {
-    solid: "bg-[#FF3E80]",
-  };
 }

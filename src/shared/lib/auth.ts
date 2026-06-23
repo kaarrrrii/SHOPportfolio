@@ -9,6 +9,17 @@ const ESDIR_AUTH_EVENT_NAME = "zazhigay-esdir-auth-updated";
 
 export type AuthRole = "student" | "admin";
 
+type DemoUser = {
+  login: string;
+  password: string;
+  role: AuthRole;
+};
+
+const DEMO_USERS: DemoUser[] = [
+  { login: "student", password: "student", role: "student" },
+  { login: "admin", password: "admin", role: "admin" },
+];
+
 export function getEsdirAuthRole(): AuthRole | null {
   if (typeof window === "undefined") {
     return null;
@@ -75,6 +86,21 @@ export function authorizeEsdirDemo() {
 
 export function authorizeAdminDemo() {
   authorizeEsdirRole("admin");
+}
+
+export function authorizeByCredentials(login: string, password: string) {
+  const normalizedLogin = login.trim().toLowerCase();
+  const user = DEMO_USERS.find(
+    (item) => item.login === normalizedLogin && item.password === password,
+  );
+
+  if (!user) {
+    return null;
+  }
+
+  authorizeEsdirRole(user.role);
+
+  return user.role;
 }
 
 export function logoutEsdirDemo() {

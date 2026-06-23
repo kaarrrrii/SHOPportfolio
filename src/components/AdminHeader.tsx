@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import { logoutEsdirDemo, useAdminAuth } from "@/shared/lib/auth";
 
 const adminNavItems = [
@@ -42,10 +43,12 @@ export default function AdminHeader() {
   const router = useRouter();
   const isAuthorized = useAdminAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
 
-  function handleLogout() {
+  function handleLogoutConfirm() {
     logoutEsdirDemo();
     setIsMenuOpen(false);
+    setIsLogoutConfirmOpen(false);
     router.push("/account");
   }
 
@@ -80,7 +83,7 @@ export default function AdminHeader() {
 
         <div className="flex items-center gap-3">
           {isAuthorized ? (
-            <LogoutButton onClick={handleLogout} className="hidden lg:inline-flex" />
+            <LogoutButton onClick={() => setIsLogoutConfirmOpen(true)} className="hidden lg:inline-flex" />
           ) : null}
 
           <button
@@ -110,11 +113,20 @@ export default function AdminHeader() {
               />
             ))}
             {isAuthorized ? (
-              <LogoutButton onClick={handleLogout} className="mt-2 inline-flex w-full" />
+              <LogoutButton onClick={() => setIsLogoutConfirmOpen(true)} className="mt-2 inline-flex w-full" />
             ) : null}
           </nav>
         </div>
       ) : null}
+
+      <ConfirmDialog
+        isOpen={isLogoutConfirmOpen}
+        title="Выйти из админки?"
+        description="После выхода доступ к панели администратора будет закрыт до следующего входа."
+        confirmLabel="Выйти"
+        onConfirm={handleLogoutConfirm}
+        onCancel={() => setIsLogoutConfirmOpen(false)}
+      />
     </header>
   );
 }

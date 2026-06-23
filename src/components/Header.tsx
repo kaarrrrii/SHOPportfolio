@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import CoinBadge from "@/components/CoinBadge";
+import ConfirmDialog from "@/components/ConfirmDialog";
 import { logoutEsdirDemo, useEsdirAuth } from "@/shared/lib/auth";
 import { useShopCart } from "@/shared/lib/shop";
 
@@ -54,7 +55,16 @@ export default function Header() {
   const { totalQuantity } = useShopCart();
   const isAuthorized = useEsdirAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const visibleNavItems = navItems.filter((item) => item.href !== "/orders" || isAuthorized);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+  const visibleNavItems = navItems.filter((item) => (
+    (item.href !== "/cart" && item.href !== "/orders") || isAuthorized
+  ));
+
+  function handleLogoutConfirm() {
+    logoutEsdirDemo();
+    setIsMenuOpen(false);
+    setIsLogoutConfirmOpen(false);
+  }
 
   return (
     <header className="sticky top-0 z-[80] w-full border-b border-[#ececec] bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
@@ -86,8 +96,14 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <AccountShortcut isActive={isActivePath(pathname, "/account")} className="hidden lg:inline-flex" />
-          {isAuthorized ? <LogoutButton className="hidden lg:inline-flex" /> : null}
+          <AccountShortcut
+            isActive={isActivePath(pathname, "/account")}
+            isAuthorized={isAuthorized}
+            className="hidden lg:inline-flex"
+          />
+          {isAuthorized ? (
+            <LogoutButton onClick={() => setIsLogoutConfirmOpen(true)} className="hidden lg:inline-flex" />
+          ) : null}
 
           <button
             type="button"
@@ -107,10 +123,13 @@ export default function Header() {
             {isAuthorized ? <CoinBadge compact className="inline-flex w-full justify-center" /> : null}
             <AccountShortcut
               isActive={isActivePath(pathname, "/account")}
+              isAuthorized={isAuthorized}
               onClick={() => setIsMenuOpen(false)}
               className="inline-flex w-full"
             />
-            {isAuthorized ? <LogoutButton onClick={() => setIsMenuOpen(false)} className="inline-flex w-full" /> : null}
+            {isAuthorized ? (
+              <LogoutButton onClick={() => setIsLogoutConfirmOpen(true)} className="inline-flex w-full" />
+            ) : null}
           </div>
           <nav className="grid gap-2">
             {visibleNavItems.map((item) => (
@@ -127,6 +146,15 @@ export default function Header() {
           </nav>
         </div>
       ) : null}
+
+      <ConfirmDialog
+        isOpen={isLogoutConfirmOpen}
+        title="Выйти из аккаунта?"
+        description="После выхода корзина и заказы будут скрыты до следующего входа."
+        confirmLabel="Выйти"
+        onConfirm={handleLogoutConfirm}
+        onCancel={() => setIsLogoutConfirmOpen(false)}
+      />
     </header>
   );
 }
@@ -137,15 +165,10 @@ type LogoutButtonProps = {
 };
 
 function LogoutButton({ onClick, className }: LogoutButtonProps) {
-  function handleLogout() {
-    logoutEsdirDemo();
-    onClick?.();
-  }
-
   return (
     <button
       type="button"
-      onClick={handleLogout}
+      onClick={onClick}
       className={`h-11 cursor-pointer items-center justify-center rounded-[10px] border border-[#ececec] bg-white px-4 text-[15px] font-black text-[#1f1f1f] shadow-[0_4px_18px_rgba(0,0,0,0.08)] transition hover:border-[#8B3DFF] hover:text-[#6F22E8] [font-family:var(--font-montserrat-alt)] ${className || "inline-flex"}`}
     >
       Выйти
@@ -155,11 +178,12 @@ function LogoutButton({ onClick, className }: LogoutButtonProps) {
 
 type AccountShortcutProps = {
   isActive: boolean;
+  isAuthorized: boolean;
   onClick?: () => void;
   className?: string;
 };
 
-function AccountShortcut({ isActive, onClick, className }: AccountShortcutProps) {
+function AccountShortcut({ isActive, isAuthorized, onClick, className }: AccountShortcutProps) {
   const resolvedClassName = [
     "h-11 items-center justify-center rounded-[10px] px-4 text-[15px] font-black transition [font-family:var(--font-montserrat-alt)]",
     isActive
@@ -172,7 +196,7 @@ function AccountShortcut({ isActive, onClick, className }: AccountShortcutProps)
 
   return (
     <Link href="/account" onClick={onClick} className={resolvedClassName}>
-      Кабинет
+      {isAuthorized ? "Мой профиль" : "Вход"}
     </Link>
   );
 }

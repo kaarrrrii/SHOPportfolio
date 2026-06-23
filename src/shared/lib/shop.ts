@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useSyncExternalStore } from "react";
 import type { CartItem, Order, OrderItem, Product } from "@/shared/data/mock";
-import { FIXED_PICKUP_INFO, cartItems, orderHistory } from "@/shared/data/mock";
+import { FIXED_PICKUP_INFO, cartItems, getStudentBySlug, orderHistory } from "@/shared/data/mock";
 import {
   getMerchProductFromSnapshot,
   getProductSizeNames,
@@ -22,6 +22,11 @@ const ORDERS_EVENT_NAME = "zazhigay-orders-updated";
 export const ORDER_STATUSES = ["Оформлен", "Готов к выдаче", "Получен"] as const;
 
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+const defaultOrderStudent = getStudentBySlug("smirnova-anna") ?? {
+  name: "Смирнова Анна Андреевна",
+  group: "24АС-1",
+};
 
 let cartSnapshotKey: string | null = null;
 let cartSnapshot: CartItem[] = cartItems;
@@ -195,6 +200,12 @@ function normalizeOrders(value: unknown): Order[] {
     return [{
       id: rawOrder.id,
       createdAt: typeof rawOrder.createdAt === "string" ? rawOrder.createdAt : formatOrderDate(new Date()),
+      studentName: typeof rawOrder.studentName === "string" && rawOrder.studentName.trim()
+        ? rawOrder.studentName.trim()
+        : defaultOrderStudent.name,
+      studentGroup: typeof rawOrder.studentGroup === "string" && rawOrder.studentGroup.trim()
+        ? rawOrder.studentGroup.trim()
+        : defaultOrderStudent.group,
       status,
       total: normalizeOrderTotal(rawOrder.total, items),
       pickup: FIXED_PICKUP_INFO,
@@ -473,6 +484,8 @@ export function useOrderHistory() {
     const order: Order = {
       id: createOrderId(),
       createdAt: formatOrderDate(new Date()),
+      studentName: defaultOrderStudent.name,
+      studentGroup: defaultOrderStudent.group,
       status: "Оформлен",
       total,
       pickup: FIXED_PICKUP_INFO,

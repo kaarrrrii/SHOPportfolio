@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Student } from "@/shared/data/mock";
-import { students } from "@/shared/data/mock";
+import { getStudentTotalPoints, students } from "@/shared/data/mock";
 import { formatCoinsLabel } from "@/shared/lib/format";
 import { accentStyles } from "@/shared/lib/theme";
 
@@ -12,6 +12,7 @@ export default function StudentProfileWidget({ student }: StudentProfileWidgetPr
   const accent = accentStyles[student.accentColor];
   const rankTextSize = getRankTextSize(student.rank);
   const neighbor = students.find((item) => item.rank === student.rank + 1) || students[0];
+  const totalPoints = getStudentTotalPoints(student);
 
   return (
     <main className="relative overflow-hidden bg-white">
@@ -80,10 +81,10 @@ export default function StudentProfileWidget({ student }: StudentProfileWidgetPr
 
             <aside className="rounded-[20px] bg-[#f7f7f7] p-5">
               <p className="text-[13px] font-black uppercase text-[#777] [font-family:var(--font-montserrat-alt)]">
-                Монетки участника
+                Баллы участника
               </p>
               <p className="mt-2 text-[34px] font-black text-[#111] [font-family:var(--font-unbounded)]">
-                {formatCoinsLabel(student.coins)}
+                {formatCoinsLabel(totalPoints)}
               </p>
 
               <div className="mt-5 flex flex-wrap gap-2">

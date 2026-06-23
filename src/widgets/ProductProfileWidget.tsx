@@ -15,6 +15,7 @@ type ProductProfileWidgetProps = {
   initialProduct?: Product | null;
   catalogHref?: string;
   productHrefBase?: string;
+  fakeActions?: boolean;
 };
 
 export default function ProductProfileWidget({
@@ -22,6 +23,7 @@ export default function ProductProfileWidget({
   initialProduct,
   catalogHref = "/merch",
   productHrefBase = "/merch",
+  fakeActions = false,
 }: ProductProfileWidgetProps) {
   const router = useRouter();
   const { addItem } = useShopCart();
@@ -29,6 +31,7 @@ export default function ProductProfileWidget({
   const product = products.find((item) => item.slug === productSlug) || null;
   const [selectedSize, setSelectedSize] = useState(initialProduct?.sizes[0]?.size || "One size");
   const [addedLabel, setAddedLabel] = useState("");
+  const [actionNotice, setActionNotice] = useState("");
 
   if (!product) {
     return <MissingProduct catalogHref={catalogHref} />;
@@ -40,8 +43,10 @@ export default function ProductProfileWidget({
     ? selectedSize
     : fallbackSize;
   const selectedSizeStock = getProductSizeStock(product, resolvedSelectedSize);
-  const relatedProducts = products
-    .filter((item) => item.slug !== product.slug && item.category === product.category)
+  const relatedProducts = [
+    ...products.filter((item) => item.slug !== product.slug && item.category === product.category),
+    ...products.filter((item) => item.slug !== product.slug && item.category !== product.category),
+  ]
     .slice(0, 3);
 
   function handleAddToCart(openCart = false) {
@@ -49,8 +54,19 @@ export default function ProductProfileWidget({
       return;
     }
 
+    if (fakeActions) {
+      setAddedLabel("");
+      setActionNotice(
+        openCart
+          ? "Переход к оформлению отключен в админской витрине."
+          : "Добавление в корзину отключено в админской витрине.",
+      );
+      return;
+    }
+
     addItem(product.slug, resolvedSelectedSize);
     setAddedLabel(resolvedSelectedSize);
+    setActionNotice("");
 
     if (openCart) {
       router.push("/cart");
@@ -132,6 +148,14 @@ export default function ProductProfileWidget({
               </div>
             ) : null}
 
+            {actionNotice ? (
+              <div className="mt-7 rounded-[14px] border border-[#AFC9EE] bg-[#EEF5FF] px-4 py-3">
+                <p className="text-[14px] font-bold text-[#335EC8] [font-family:var(--font-montserrat-alt)]">
+                  {actionNotice}
+                </p>
+              </div>
+            ) : null}
+
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <button
                 type="button"
@@ -167,7 +191,7 @@ export default function ProductProfileWidget({
                   price={String(item.price)}
                   imageSrc={item.imageSrc}
                   href={`${productHrefBase}/${item.slug}`}
-                  actionLabel="В корзину"
+                  actionLabel={fakeActions ? "Открыть" : "В корзину"}
                   actionHref={`${productHrefBase}/${item.slug}`}
                 />
               ))}

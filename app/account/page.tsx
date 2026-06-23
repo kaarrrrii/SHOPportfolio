@@ -4,10 +4,12 @@ import AccountWidget from "@/widgets/AccountWidget";
 
 export default function AccountPage() {
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <Header />
-      <AccountWidget />
+      <div className="flex-1">
+        <AccountWidget />
+      </div>
       <BrandFooter />
-    </>
+    </div>
   );
 }

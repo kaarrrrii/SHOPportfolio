@@ -1,8 +1,10 @@
 "use client";
 
+import type { FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { authorizeAdminDemo, authorizeEsdirDemo, useEsdirAuthRole } from "@/shared/lib/auth";
+import { useEffect, useState } from "react";
+import { authorizeByCredentials, useEsdirAuthRole } from "@/shared/lib/auth";
 import { formatCoins } from "@/shared/lib/format";
 import { getStudentBySlug } from "@/shared/data/mock";
 
@@ -11,6 +13,7 @@ const profileStudent = getStudentBySlug("smirnova-anna") ?? {
   faculty: "Архитектурно-строительный факультет",
   group: "24АС-1",
   coins: 450,
+  totalEarnedPoints: 450,
   achievements: [
     "Оформила навигацию для форума",
     "Собрала серию афиш",
@@ -23,18 +26,35 @@ const achievementPoints = [180, 150, 120];
 export default function AccountWidget() {
   const router = useRouter();
   const authRole = useEsdirAuthRole();
+  const [login, setLogin] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
   const achievements = profileStudent.achievements.map((title, index) => ({
     title,
     points: achievementPoints[index] ?? 50,
   }));
 
-  function handleStudentDemoLogin() {
-    authorizeEsdirDemo();
-  }
+  useEffect(() => {
+    if (authRole === "admin") {
+      router.replace("/admin/merch");
+    }
+  }, [authRole, router]);
 
-  function handleAdminDemoLogin() {
-    authorizeAdminDemo();
-    router.push("/admin/merch");
+  function handleLoginSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const role = authorizeByCredentials(login, password);
+
+    if (!role) {
+      setLoginError("Неверный логин или пароль");
+      return;
+    }
+
+    setLoginError("");
+
+    if (role === "admin") {
+      router.replace("/admin/merch");
+    }
   }
 
   if (!authRole) {
@@ -46,27 +66,43 @@ export default function AccountWidget() {
               Авторизация
             </p>
             <h1 className="mx-auto mt-3 max-w-[620px] text-[32px] font-black uppercase leading-[1.05] text-[#111] [font-family:var(--font-unbounded)] sm:text-[40px] md:text-[52px]">
-              Выберите роль
+              Вход
             </h1>
             <p className="mx-auto mt-5 max-w-[520px] text-[16px] font-semibold leading-[1.45] text-[#555] [font-family:var(--font-montserrat-alt)]">
-              Студенты покупают мерч и смотрят свои заказы, администратор управляет товарами и выдачей.
+              Войдите, чтобы покупать мерч и смотреть свои заказы.
             </p>
-            <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+            <form onSubmit={handleLoginSubmit} className="mx-auto mt-7 grid max-w-[420px] gap-4 text-left">
+              <label className="grid gap-2 text-[13px] font-black uppercase text-[#555] [font-family:var(--font-montserrat-alt)]">
+                Логин
+                <input
+                  value={login}
+                  onChange={(event) => setLogin(event.target.value)}
+                  autoComplete="username"
+                  className="h-12 rounded-[10px] border border-[#dedede] bg-[#fbfbfb] px-4 text-[15px] font-bold normal-case text-[#111] outline-none transition focus:border-[#7B5BC8] focus:bg-white [font-family:var(--font-montserrat-alt)]"
+                />
+              </label>
+              <label className="grid gap-2 text-[13px] font-black uppercase text-[#555] [font-family:var(--font-montserrat-alt)]">
+                Пароль
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  autoComplete="current-password"
+                  className="h-12 rounded-[10px] border border-[#dedede] bg-[#fbfbfb] px-4 text-[15px] font-bold normal-case text-[#111] outline-none transition focus:border-[#7B5BC8] focus:bg-white [font-family:var(--font-montserrat-alt)]"
+                />
+              </label>
+              {loginError ? (
+                <p className="rounded-[10px] bg-[#FFF0F6] px-4 py-3 text-[13px] font-black text-[#E82E78] [font-family:var(--font-montserrat-alt)]">
+                  {loginError}
+                </p>
+              ) : null}
               <button
-                type="button"
-                onClick={handleStudentDemoLogin}
+                type="submit"
                 className="inline-flex min-h-12 items-center justify-center rounded-[10px] bg-[#FF3E80] px-6 py-3 text-[15px] font-black text-white shadow-[0_10px_22px_rgba(255,62,128,0.26)] transition hover:bg-[#E82E78] [font-family:var(--font-montserrat-alt)]"
               >
-                Войти как студент
+                Войти
               </button>
-              <button
-                type="button"
-                onClick={handleAdminDemoLogin}
-                className="inline-flex min-h-12 items-center justify-center rounded-[10px] bg-[#335EC8] px-6 py-3 text-[15px] font-black text-white shadow-[0_10px_22px_rgba(51,94,200,0.22)] transition hover:bg-[#244CA8] [font-family:var(--font-montserrat-alt)]"
-              >
-                Войти как администратор
-              </button>
-            </div>
+            </form>
           </section>
         </div>
       </main>
@@ -74,26 +110,7 @@ export default function AccountWidget() {
   }
 
   if (authRole === "admin") {
-    return (
-      <main className="bg-white">
-        <div className="mx-auto max-w-[1440px] px-5 py-10 md:px-8 md:py-14">
-          <section className="mx-auto max-w-[760px] rounded-[24px] bg-white p-6 text-center shadow-[0_12px_34px_rgba(0,0,0,0.08)] md:p-10">
-            <p className="text-[15px] font-black uppercase text-[#335EC8] [font-family:var(--font-montserrat-alt)]">
-              Администратор
-            </p>
-            <h1 className="mx-auto mt-3 max-w-[620px] text-[32px] font-black uppercase leading-[1.05] text-[#111] [font-family:var(--font-unbounded)] sm:text-[40px] md:text-[52px]">
-              Панель управления вынесена отдельно
-            </h1>
-            <Link
-              href="/admin/merch"
-              className="mt-7 inline-flex min-h-12 items-center justify-center rounded-[10px] bg-[#335EC8] px-6 py-3 text-[15px] font-black text-white shadow-[0_10px_22px_rgba(51,94,200,0.22)] transition hover:bg-[#244CA8] [font-family:var(--font-montserrat-alt)]"
-            >
-              Открыть админку
-            </Link>
-          </section>
-        </div>
-      </main>
-    );
+    return null;
   }
 
   return (

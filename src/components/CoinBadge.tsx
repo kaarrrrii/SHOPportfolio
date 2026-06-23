@@ -31,7 +31,7 @@ export default function CoinBadge({
         className="block size-6 shrink-0 bg-[#B8CB2F] [mask:url('/coins.svg')_center/contain_no-repeat] [-webkit-mask:url('/coins.svg')_center/contain_no-repeat]"
       />
       <span className="whitespace-nowrap text-[13px] font-semibold text-[#1f1f1f] [font-family:var(--font-montserrat-alt)] md:text-[15px]">
-        Баланс: <strong>{formatCoins(resolvedValue)}</strong> монеток
+        Баланс: <strong>{formatCoins(resolvedValue)}</strong> баллов
       </span>
     </span>
   );

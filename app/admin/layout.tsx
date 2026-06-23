@@ -1,4 +1,3 @@
-import AdminFooter from "@/components/AdminFooter";
 import AdminHeader from "@/components/AdminHeader";
 
 export default function AdminLayout({
@@ -10,7 +9,6 @@ export default function AdminLayout({
     <>
       <AdminHeader />
       {children}
-      <AdminFooter />
     </>
   );
 }

@@ -56,7 +56,7 @@ export default function MerchProductCard({
           <p className="text-[15px] font-black leading-none text-[#1A1A1A] [font-family:var(--font-unbounded)] sm:text-[18px]">
             {price}
             <span className="ml-1 text-[11px] font-semibold text-[#8A8A8A] [font-family:var(--font-montserrat-alt)] sm:text-[13px]">
-              монеток
+              баллов
             </span>
           </p>
 
