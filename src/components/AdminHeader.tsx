@@ -2,64 +2,57 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import CoinBadge from "@/components/CoinBadge";
-import { logoutEsdirDemo, useEsdirAuth } from "@/shared/lib/auth";
-import { useShopCart } from "@/shared/lib/shop";
+import { logoutEsdirDemo, useAdminAuth } from "@/shared/lib/auth";
 
-const navItems = [
-  { href: "/main", label: "О проекте" },
-  { href: "/top", label: "Топ студентов" },
-  { href: "/merch", label: "Мерч" },
-  { href: "/cart", label: "Корзина" },
-  { href: "/orders", label: "Заказы" },
+const adminNavItems = [
+  { href: "/admin/merch", label: "Мерч" },
+  { href: "/admin/orders", label: "Заказы" },
+  { href: "/admin/showcase", label: "Витрина" },
 ];
 
-type HeaderNavAccent = {
+type AdminNavAccent = {
   active: string;
   inactive: string;
 };
 
-const headerNavAccents: Record<string, HeaderNavAccent> = {
-  "/main": {
-    active: "text-[#FF3E80] shadow-[inset_0_-3px_0_#FF3E80]",
-    inactive: "text-[#1f1f1f] hover:text-[#FF3E80]",
-  },
-  "/top": {
-    active: "text-[#9AC225] shadow-[inset_0_-3px_0_#9AC225]",
-    inactive: "text-[#1f1f1f] hover:text-[#9AC225]",
-  },
-  "/merch": {
+const adminNavAccents: Record<string, AdminNavAccent> = {
+  "/admin/merch": {
     active: "text-[#335EC8] shadow-[inset_0_-3px_0_#335EC8]",
     inactive: "text-[#1f1f1f] hover:text-[#335EC8]",
   },
-  "/cart": {
+  "/admin/orders": {
+    active: "text-[#9AC225] shadow-[inset_0_-3px_0_#9AC225]",
+    inactive: "text-[#1f1f1f] hover:text-[#9AC225]",
+  },
+  "/admin/showcase": {
     active: "text-[#22A7C7] shadow-[inset_0_-3px_0_#22A7C7]",
     inactive: "text-[#1f1f1f] hover:text-[#22A7C7]",
   },
-  "/orders": {
-    active: "text-[#7B5BC8] shadow-[inset_0_-3px_0_#7B5BC8]",
-    inactive: "text-[#1f1f1f] hover:text-[#7B5BC8]",
-  },
 };
 
-const defaultHeaderNavAccent: HeaderNavAccent = {
+const defaultAdminNavAccent: AdminNavAccent = {
   active: "text-[#335EC8] shadow-[inset_0_-3px_0_#335EC8]",
   inactive: "text-[#1f1f1f] hover:text-[#335EC8]",
 };
 
-export default function Header() {
+export default function AdminHeader() {
   const pathname = usePathname();
-  const { totalQuantity } = useShopCart();
-  const isAuthorized = useEsdirAuth();
+  const router = useRouter();
+  const isAuthorized = useAdminAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const visibleNavItems = navItems.filter((item) => item.href !== "/orders" || isAuthorized);
+
+  function handleLogout() {
+    logoutEsdirDemo();
+    setIsMenuOpen(false);
+    router.push("/account");
+  }
 
   return (
     <header className="sticky top-0 z-[80] w-full border-b border-[#ececec] bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
       <div className="mx-auto flex h-[64px] max-w-[1440px] items-center justify-between gap-3 px-4 sm:h-[76px] sm:px-5 md:px-8">
-        <Link href="/" className="flex min-w-0 cursor-pointer items-center gap-2" onClick={() => setIsMenuOpen(false)}>
+        <Link href="/admin/merch" className="flex min-w-0 cursor-pointer items-center gap-2" onClick={() => setIsMenuOpen(false)}>
           <Image
             src="/fire.svg"
             alt=""
@@ -74,27 +67,28 @@ export default function Header() {
         </Link>
 
         <nav className="hidden items-center gap-3 lg:flex">
-          {visibleNavItems.map((item) => (
-            <HeaderNavLink
+          {adminNavItems.map((item) => (
+            <AdminNavLink
               key={item.href}
               href={item.href}
-              label={getNavLabel(item.label, item.href, totalQuantity)}
+              label={item.label}
               isActive={isActivePath(pathname, item.href)}
-              accent={headerNavAccents[item.href] || defaultHeaderNavAccent}
+              accent={adminNavAccents[item.href] || defaultAdminNavAccent}
             />
           ))}
         </nav>
 
         <div className="flex items-center gap-3">
-          <AccountShortcut isActive={isActivePath(pathname, "/account")} className="hidden lg:inline-flex" />
-          {isAuthorized ? <LogoutButton className="hidden lg:inline-flex" /> : null}
+          {isAuthorized ? (
+            <LogoutButton onClick={handleLogout} className="hidden lg:inline-flex" />
+          ) : null}
 
           <button
             type="button"
             aria-label={isMenuOpen ? "Закрыть меню" : "Открыть меню"}
             aria-expanded={isMenuOpen}
             onClick={() => setIsMenuOpen((value) => !value)}
-            className="inline-flex size-10 cursor-pointer items-center justify-center rounded-[10px] border border-[#d7eff5] bg-white text-[#1f1f1f] shadow-[0_4px_16px_rgba(34,167,199,0.12)] transition hover:border-[#22A7C7] hover:text-[#22A7C7] lg:hidden"
+            className="inline-flex size-10 cursor-pointer items-center justify-center rounded-[10px] border border-[#d7eff5] bg-white text-[#1f1f1f] shadow-[0_4px_16px_rgba(34,167,199,0.12)] transition hover:border-[#967DD1] hover:text-[#967DD1] lg:hidden"
           >
             {isMenuOpen ? <CloseIcon /> : <MenuIcon />}
           </button>
@@ -103,27 +97,21 @@ export default function Header() {
 
       {isMenuOpen ? (
         <div className="fixed inset-x-0 top-[64px] z-[79] max-h-[calc(100dvh-64px)] overflow-y-auto border-t border-[#ececec] bg-white px-4 py-4 shadow-[0_18px_34px_rgba(0,0,0,0.12)] sm:top-[76px] sm:max-h-[calc(100dvh-76px)] sm:px-5 lg:hidden">
-          <div className="mb-4 grid gap-2">
-            {isAuthorized ? <CoinBadge compact className="inline-flex w-full justify-center" /> : null}
-            <AccountShortcut
-              isActive={isActivePath(pathname, "/account")}
-              onClick={() => setIsMenuOpen(false)}
-              className="inline-flex w-full"
-            />
-            {isAuthorized ? <LogoutButton onClick={() => setIsMenuOpen(false)} className="inline-flex w-full" /> : null}
-          </div>
           <nav className="grid gap-2">
-            {visibleNavItems.map((item) => (
-              <HeaderNavLink
+            {adminNavItems.map((item) => (
+              <AdminNavLink
                 key={item.href}
                 href={item.href}
-                label={getNavLabel(item.label, item.href, totalQuantity)}
+                label={item.label}
                 isActive={isActivePath(pathname, item.href)}
-                accent={headerNavAccents[item.href] || defaultHeaderNavAccent}
+                accent={adminNavAccents[item.href] || defaultAdminNavAccent}
                 onClick={() => setIsMenuOpen(false)}
                 className="w-full px-4 py-3 text-[15px]"
               />
             ))}
+            {isAuthorized ? (
+              <LogoutButton onClick={handleLogout} className="mt-2 inline-flex w-full" />
+            ) : null}
           </nav>
         </div>
       ) : null}
@@ -132,68 +120,39 @@ export default function Header() {
 }
 
 type LogoutButtonProps = {
-  onClick?: () => void;
+  onClick: () => void;
   className?: string;
 };
 
 function LogoutButton({ onClick, className }: LogoutButtonProps) {
-  function handleLogout() {
-    logoutEsdirDemo();
-    onClick?.();
-  }
-
   return (
     <button
       type="button"
-      onClick={handleLogout}
-      className={`h-11 cursor-pointer items-center justify-center rounded-[10px] border border-[#ececec] bg-white px-4 text-[15px] font-black text-[#1f1f1f] shadow-[0_4px_18px_rgba(0,0,0,0.08)] transition hover:border-[#8B3DFF] hover:text-[#6F22E8] [font-family:var(--font-montserrat-alt)] ${className || "inline-flex"}`}
+      onClick={onClick}
+      className={`h-11 cursor-pointer items-center justify-center rounded-[10px] bg-[#FF3E80] px-4 text-[15px] font-black text-white shadow-[0_8px_18px_rgba(255,62,128,0.24)] transition hover:bg-[#E82E78] [font-family:var(--font-montserrat-alt)] ${className || "inline-flex"}`}
     >
       Выйти
     </button>
   );
 }
 
-type AccountShortcutProps = {
-  isActive: boolean;
-  onClick?: () => void;
-  className?: string;
-};
-
-function AccountShortcut({ isActive, onClick, className }: AccountShortcutProps) {
-  const resolvedClassName = [
-    "h-11 items-center justify-center rounded-[10px] px-4 text-[15px] font-black transition [font-family:var(--font-montserrat-alt)]",
-    isActive
-      ? "bg-[#FF3E80] text-white shadow-[0_8px_18px_rgba(255,62,128,0.24)]"
-      : "border border-[#ececec] bg-white text-[#1f1f1f] shadow-[0_4px_18px_rgba(0,0,0,0.08)] hover:border-[#FF3E80] hover:text-[#E82E78]",
-    className || "inline-flex",
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  return (
-    <Link href="/account" onClick={onClick} className={resolvedClassName}>
-      Кабинет
-    </Link>
-  );
-}
-
-type HeaderNavLinkProps = {
+type AdminNavLinkProps = {
   href: string;
   label: string;
   isActive?: boolean;
   onClick?: () => void;
-  accent?: HeaderNavAccent;
+  accent?: AdminNavAccent;
   className?: string;
 };
 
-function HeaderNavLink({
+function AdminNavLink({
   href,
   label,
   isActive = false,
   onClick,
-  accent = defaultHeaderNavAccent,
+  accent = defaultAdminNavAccent,
   className = "",
-}: HeaderNavLinkProps) {
+}: AdminNavLinkProps) {
   return (
     <Link
       href={href}
@@ -209,14 +168,6 @@ function HeaderNavLink({
 
 function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
-}
-
-function getNavLabel(label: string, href: string, totalQuantity: number) {
-  if (href === "/cart" && totalQuantity > 0) {
-    return `${label} (${totalQuantity})`;
-  }
-
-  return label;
 }
 
 function MenuIcon() {

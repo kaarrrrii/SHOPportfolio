@@ -1,6 +1,0 @@
-{
-  "version": 3,
-  "sources": [],
-  "sections": [
-    {"offset": {"line": 10, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/Karina/Documents/portfolio/app/page.tsx"],"sourcesContent":["import Header from \"@/components/Header\";\nimport \"./globals.css\";\n\nexport default function Home() {\n  return (\n    <>\n      <Header />\n    </>\n  );\n}"],"names":["Home","Header"],"mappings":";;;;;;;;;;;;;AAGe,SAASA;IACtB,qBACE;kBACE,cAAA,8OAACC;;;;;;AAGP"}}]
-}

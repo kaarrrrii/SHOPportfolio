@@ -1,63 +1,46 @@
+"use client";
+
 import ActionButton from "@/components/ActionButton";
+import { formatCoins } from "@/shared/lib/format";
+import { useMerchProducts } from "@/shared/lib/merch";
 import MerchProductCard from "@/widgets/MerchProductCard";
 
-const merchItems = [
-  {
-    title: "Худи «Искра»",
-    description: "Тёплое худи оверсайз с ярким принтом на спине.",
-    price: "3 500",
-    imageSrc: "/merch__hero.png",
-    imageAlt: "Чёрное худи Зажигаем",
-    imageClassName: "",
-  },
-  {
-    title: "Футболка «Зажигаем»",
-    description: "Базовая футболка из плотного хлопка с фирменным принтом.",
-    price: "2 900",
-    imageSrc: "/merch__hero.png",
-    imageAlt: "Белая футболка Зажигаем",
-    imageClassName: "scale-[0.9] brightness-[1.3] saturate-0 contrast-75",
-  },
-  {
-    title: "Панама «Движ»",
-    description: "Стильная панама для активных дней и ярких событий.",
-    price: "1 900",
-    imageSrc: "/merch__hero.png",
-    imageAlt: "Чёрная панама Зажигаем",
-    imageClassName: "scale-[0.82] contrast-125 brightness-75",
-  },
-];
-
 export default function MerchSection() {
+  const { products } = useMerchProducts();
+  const previewProducts = products.slice(0, 3);
+
   return (
     <section className="w-full">
-      <div className="mx-auto max-w-[1440px] px-5 py-14 md:px-8 md:py-16">
-        <div className="mb-6">
-          <h2 className="text-[52px] font-black uppercase leading-[0.9] text-[#161616] [font-family:var(--font-unbounded)]">
+      <div className="mx-auto max-w-[1440px] px-4 py-8 sm:px-5 sm:py-12 md:px-8 md:py-16">
+        <div className="mb-4 sm:mb-6">
+          <h2 className="text-[32px] font-black uppercase leading-[1] text-[#161616] [font-family:var(--font-unbounded)] sm:text-[44px] md:text-[52px]">
             Мерч
           </h2>
-          <span className="mt-3 block h-[4px] w-full max-w-[120px] rounded-full bg-[#B8CB2F]" />
+          <span className="mt-2 block h-[3px] w-full max-w-[90px] rounded-full bg-[#B8CB2F] sm:mt-3 sm:h-[4px] sm:max-w-[120px]" />
         </div>
 
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-          {merchItems.map((item) => (
-            <MerchProductCard
-              key={item.title}
-              title={item.title}
-              description={item.description}
-              price={item.price}
-              imageSrc={item.imageSrc}
-              imageAlt={item.imageAlt}
-              imageClassName={item.imageClassName}
-            />
-          ))}
-        </div>
+        {previewProducts.length > 0 ? (
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {previewProducts.map((product) => (
+              <MerchProductCard
+                key={product.slug}
+                title={product.title}
+                description={product.description}
+                price={formatCoins(product.price)}
+                imageSrc={product.imageSrc}
+                href={`/merch/${product.slug}`}
+                actionHref={`/merch/${product.slug}`}
+                actionLabel="Выбрать"
+              />
+            ))}
+          </div>
+        ) : null}
 
-        <div className="mt-6 flex justify-center">
+        <div className="mt-4 flex justify-center sm:mt-6">
           <ActionButton
             href="/merch"
             label="Весь каталог"
-            className="h-[64px] w-full max-w-[420px] rounded-[10px] bg-[#1f2b00] px-8 text-[28px] font-medium text-white shadow-[0_10px_20px_rgba(31,43,0,0.28)] [font-family:var(--font-unbounded)]"
+            className="h-[48px] w-full max-w-[340px] rounded-[10px] bg-[#111111] px-5 text-[16px] font-medium text-white shadow-[0_10px_20px_rgba(17,17,17,0.28)] transition hover:bg-[#303030] [font-family:var(--font-unbounded)] sm:h-[58px] sm:max-w-[420px] sm:px-8 sm:text-[22px] md:h-[64px] md:text-[26px]"
           />
         </div>
       </div>

@@ -1,15 +1,14 @@
+import BrandFooter from "@/components/BrandFooter";
 import Header from "@/components/Header";
-import HeroBlock from "@/components/HeroBlock";
-import AboutProjectSection from "@/components/AboutProjectSection";
-import MerchSection from "@/components/MerchSection";
+import { students } from "@/shared/data/mock";
+import TopStudentsWidget from "@/widgets/TopStudentsWidget";
 
-export default function Home() {
+export default function TopPage() {
   return (
     <>
       <Header />
-      <HeroBlock />
-      <AboutProjectSection />
-      <MerchSection />
+      <TopStudentsWidget students={students} />
+      <BrandFooter />
     </>
   );
 }

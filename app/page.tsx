@@ -7,9 +7,11 @@ export default function Home() {
   return (
     <>
       <Header />
-      <HeroBlock />
-      <AboutProjectSection />
-      <MerchSection />
+      <main className="about-page bg-white">
+        <HeroBlock />
+        <AboutProjectSection />
+        <MerchSection />
+      </main>
     </>
   );
 }

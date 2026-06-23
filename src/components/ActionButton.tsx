@@ -40,7 +40,7 @@ function ArrowRightIcon() {
       viewBox="0 0 34 18"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className="shrink-0"
+      className="h-[14px] w-[26px] shrink-0 sm:h-[18px] sm:w-[34px]"
       aria-hidden="true"
     >
       <path
