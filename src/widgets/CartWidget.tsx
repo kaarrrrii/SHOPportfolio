@@ -1,9 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import MerchImage from "@/components/MerchImage";
 import { FIXED_PICKUP_INFO, type Order } from "@/shared/data/mock";
 import { useEsdirAuth } from "@/shared/lib/auth";
 import { formatCoinsLabel } from "@/shared/lib/format";
@@ -134,7 +134,7 @@ export default function CartWidget() {
 
               <Link
                 href="/merch"
-                className="mt-3 inline-flex h-12 w-full items-center justify-center rounded-[10px] border border-[#d8d8d8] bg-white text-[15px] font-black text-[#111] transition hover:border-[#335EC8] hover:text-[#335EC8] [font-family:var(--font-montserrat-alt)]"
+                className="mt-3 inline-flex h-12 w-full items-center justify-center rounded-[10px] border border-[#d8d8d8] bg-white text-[15px] font-black text-[#111] transition hover:border-[#F2C94C] hover:text-[#8A5A00] [font-family:var(--font-montserrat-alt)]"
               >
                 Вернуться к мерчу
               </Link>
@@ -170,25 +170,23 @@ function CartLineCard({ item, onToggle, onRemove }: CartLineCardProps) {
       </label>
 
       <Link href={`/merch/${item.product.slug}`} className="relative aspect-square overflow-hidden rounded-[14px] bg-white">
-        <Image
+        <MerchImage
           src={item.product.imageSrc}
           alt=""
           fill
-          sizes="112px"
           className="object-contain p-3"
-          unoptimized
         />
       </Link>
 
       <div className="min-w-0">
         <Link
           href={`/merch/${item.product.slug}`}
-          className="text-[20px] font-black leading-[1.1] text-[#111] transition hover:text-[#335EC8] [font-family:var(--font-unbounded)]"
+          className="text-[20px] font-black leading-[1.1] text-[#111] transition hover:text-[#8A5A00] [font-family:var(--font-unbounded)]"
         >
           {item.product.title}
         </Link>
         <p className="mt-2 text-[14px] font-semibold text-[#555] [font-family:var(--font-montserrat-alt)]">
-          Размер: <span className="font-black text-[#335EC8]">{item.size}</span>
+          Размер: <span className="font-black text-[#8A5A00]">{item.size}</span>
         </p>
       </div>
 
@@ -201,7 +199,7 @@ function CartLineCard({ item, onToggle, onRemove }: CartLineCardProps) {
           type="button"
           onClick={onRemove}
           aria-label={`Удалить ${item.product.title}`}
-          className="grid size-10 place-items-center rounded-[9px] bg-[#335EC8] text-[20px] font-black text-white transition hover:scale-105 hover:bg-[#244CA8]"
+          className="grid size-10 place-items-center rounded-[9px] bg-[#F2C94C] text-[20px] font-black text-[#111] transition hover:scale-105 hover:bg-[#E4B938]"
         >
           ×
         </button>
@@ -341,7 +339,7 @@ function CheckoutSuccessModal({ order, onClose }: CheckoutSuccessModalProps) {
           <Link
             href="/orders"
             onClick={onClose}
-            className="inline-flex h-12 items-center justify-center rounded-[10px] bg-[#335EC8] px-5 text-[14px] font-black text-white transition hover:bg-[#244CA8] [font-family:var(--font-montserrat-alt)]"
+            className="inline-flex h-12 items-center justify-center rounded-[10px] bg-[#F2C94C] px-5 text-[14px] font-black text-[#111] transition hover:bg-[#E4B938] [font-family:var(--font-montserrat-alt)]"
           >
             Смотреть заказы
           </Link>

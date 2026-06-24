@@ -127,7 +127,7 @@ export default function MerchCatalogWidget({ productHrefBase = "/merch" }: Merch
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
+            filteredProducts.map((product, index) => (
               <MerchProductCard
                 key={product.slug}
                 title={product.title}
@@ -137,6 +137,7 @@ export default function MerchCatalogWidget({ productHrefBase = "/merch" }: Merch
                 href={`${productHrefBase}/${product.slug}`}
                 actionHref={`${productHrefBase}/${product.slug}`}
                 actionLabel="В корзину"
+                accentIndex={index}
               />
             ))
           ) : (
@@ -209,13 +210,13 @@ function CategoryFilters({
 
   return (
     <div ref={dropdownRef} className="relative w-full max-w-[380px] [font-family:var(--font-montserrat-alt)]">
-      <p className="mb-2 text-[13px] font-black uppercase text-[#335EC8]">
+      <p className="mb-2 text-[13px] font-black uppercase text-[#8A5A00]">
         Категория
       </p>
       <button
         type="button"
         onClick={() => setIsOpen((value) => !value)}
-        className="flex h-14 w-full items-center justify-between gap-3 rounded-[14px] border border-[#AFC9EE] bg-white px-4 text-left shadow-[0_8px_24px_rgba(51,94,200,0.10)] transition hover:border-[#335EC8]"
+        className="flex h-14 w-full items-center justify-between gap-3 rounded-[14px] border border-[#F4D98B] bg-white px-4 text-left shadow-[0_8px_24px_rgba(242,201,76,0.10)] transition hover:border-[#F2C94C]"
         aria-expanded={isOpen}
         aria-haspopup="listbox"
         aria-busy={isLoading}
@@ -228,7 +229,7 @@ function CategoryFilters({
             {isLoading ? "Обновляем каталог" : `${activeFilter.count} товаров`}
           </span>
         </span>
-        <span className={`grid size-9 shrink-0 place-items-center rounded-[10px] bg-[#EEF5FF] text-[#335EC8] transition ${isOpen ? "rotate-180" : ""}`} aria-hidden="true">
+        <span className={`grid size-9 shrink-0 place-items-center rounded-[10px] bg-[#FFF8DE] text-[#8A5A00] transition ${isOpen ? "rotate-180" : ""}`} aria-hidden="true">
           <ChevronDownIcon />
         </span>
       </button>
@@ -236,7 +237,7 @@ function CategoryFilters({
       {isOpen ? (
         <div
           role="listbox"
-          className="absolute left-0 right-0 top-[calc(100%+8px)] z-30 overflow-hidden rounded-[14px] border border-[#AFC9EE] bg-white p-2 shadow-[0_18px_42px_rgba(51,94,200,0.18)]"
+          className="absolute left-0 right-0 top-[calc(100%+8px)] z-30 overflow-hidden rounded-[14px] border border-[#F4D98B] bg-white p-2 shadow-[0_18px_42px_rgba(242,201,76,0.18)]"
         >
           {filters.map((filter) => {
             const isActive = filter.value === activeCategory;
@@ -250,8 +251,8 @@ function CategoryFilters({
                 onClick={() => handleChange(filter.value)}
                 className={`flex min-h-11 w-full items-center justify-between gap-3 rounded-[10px] px-3 py-2 text-left transition ${
                   isActive
-                    ? "bg-[#335EC8] text-white"
-                    : "text-[#111] hover:bg-[#EEF5FF] hover:text-[#335EC8]"
+                    ? "bg-[#F2C94C] text-[#111]"
+                    : "text-[#111] hover:bg-[#FFF8DE] hover:text-[#8A5A00]"
                 }`}
               >
                 <span className="truncate text-[14px] font-black">

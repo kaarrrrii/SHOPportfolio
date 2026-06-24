@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useMemo } from "react";
+import MerchImage from "@/components/MerchImage";
 import { useEsdirAuth } from "@/shared/lib/auth";
 import { formatCoinsLabel } from "@/shared/lib/format";
 import { useMerchProducts } from "@/shared/lib/merch";
@@ -69,7 +69,7 @@ export default function OrdersHistoryWidget() {
               <div className={`rounded-[16px] ${statusTheme.soft} p-3 sm:p-4`}>
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className={`inline-flex min-h-9 items-center rounded-full px-4 py-2 text-[13px] font-black text-white [font-family:var(--font-montserrat-alt)] ${statusTheme.solid}`}>
+                    <span className={`inline-flex min-h-9 items-center rounded-full px-4 py-2 text-[13px] font-black [font-family:var(--font-montserrat-alt)] ${statusTheme.solid} ${statusTheme.labelText}`}>
                       {order.status}
                     </span>
                     <OrderMetaPill label="Дата" value={order.createdAt} />
@@ -90,36 +90,36 @@ export default function OrdersHistoryWidget() {
                 {order.items.map((item) => {
                   const product = productsBySlug.get(item.productSlug);
 
-                  if (!product) {
-                    return null;
-                  }
-
                   return (
                     <Link
-                      key={`${order.id}-${product.slug}-${item.size}`}
-                      href={`/merch/${product.slug}`}
+                      key={`${order.id}-${item.productSlug}-${item.size}`}
+                      href={`/merch/${item.productSlug}`}
                       className="grid min-w-0 gap-3 rounded-[16px] border border-[#eeeeee] bg-[#fbfbfb] p-3 transition hover:border-[#8B3DFF] sm:grid-cols-[74px_minmax(0,1fr)_minmax(110px,auto)] sm:items-center"
                     >
                       <div className="relative aspect-square overflow-hidden rounded-[12px] bg-white">
-                        <Image
-                          src={product.imageSrc}
-                          alt=""
-                          fill
-                          sizes="74px"
-                          className="object-contain p-2"
-                          unoptimized
-                        />
+                        {product ? (
+                          <MerchImage
+                            src={product.imageSrc}
+                            alt=""
+                            fill
+                            className="object-contain p-2"
+                          />
+                        ) : (
+                          <div className="grid h-full place-items-center bg-[#FFF0F6] px-2 text-center text-[11px] font-black uppercase leading-[1.15] text-[#E82E78] [font-family:var(--font-montserrat-alt)]">
+                            Нет в каталоге
+                          </div>
+                        )}
                       </div>
                       <div className="min-w-0">
                         <p className="break-words text-[17px] font-black text-[#111] [font-family:var(--font-unbounded)]">
-                          {product.title}
+                          {product?.title || "Товар больше недоступен"}
                         </p>
                         <p className="mt-1 text-[14px] font-semibold text-[#666] [font-family:var(--font-montserrat-alt)]">
                           Размер: {item.size} · {item.quantity} шт.
                         </p>
                       </div>
                       <p className="text-left text-[16px] font-black text-[#111] [font-family:var(--font-unbounded)] sm:text-right">
-                        {formatCoinsLabel(product.price * item.quantity)}
+                        {product ? formatCoinsLabel(product.price * item.quantity) : "Архив"}
                       </p>
                     </Link>
                   );
@@ -155,15 +155,17 @@ function getOrderStatusTheme(status: string) {
       soft: "bg-[#F7FBE8]",
       solid: "bg-[#B8CB2F]",
       border: "border-[#D6E779]",
+      labelText: "text-[#111]",
     };
   }
 
   if (status === "Получен") {
     return {
-      text: "text-[#335EC8]",
-      soft: "bg-[#EEF5FF]",
-      solid: "bg-[#335EC8]",
-      border: "border-[#AFC9EE]",
+      text: "text-[#8A5A00]",
+      soft: "bg-[#FFF8DE]",
+      solid: "bg-[#F2C94C]",
+      border: "border-[#F4D98B]",
+      labelText: "text-[#111]",
     };
   }
 
@@ -172,5 +174,6 @@ function getOrderStatusTheme(status: string) {
     soft: "bg-[#FFF0F6]",
     solid: "bg-[#FF3E80]",
     border: "border-[#F7B7D4]",
+    labelText: "text-white",
   };
 }

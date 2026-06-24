@@ -77,7 +77,7 @@
     pointer-events: none;
     background-image:
       linear-gradient(#b8cb2f, #b8cb2f),
-      linear-gradient(#335ec8, #335ec8),
+      linear-gradient(#f2c94c, #f2c94c),
       linear-gradient(#ff3e80, #ff3e80);
     background-position:
       left max(34px, calc((100vw - 1320px) / 2 + 80px)) top 430px,
@@ -128,19 +128,46 @@
   }
 
   .admin-page::after {
+    background-image:
+      linear-gradient(#ff3e80, #ff3e80),
+      linear-gradient(#22a7c7, #22a7c7),
+      linear-gradient(#7b5bc8, #7b5bc8),
+      linear-gradient(#b8cb2f, #b8cb2f),
+      linear-gradient(#f2c94c, #f2c94c);
     background-position:
-      left max(18px, calc((100vw - 1440px) / 2 + 36px)) top 320px,
-      right max(22px, calc((100vw - 1440px) / 2 + 44px)) top 680px,
-      left max(20px, calc((100vw - 1440px) / 2 + 42px)) bottom 360px;
+      left max(26px, calc((100vw - 1440px) / 2 + 60px)) top 330px,
+      right max(26px, calc((100vw - 1440px) / 2 + 64px)) top 590px,
+      left max(22px, calc((100vw - 1440px) / 2 + 54px)) bottom 360px,
+      right max(34px, calc((100vw - 1440px) / 2 + 76px)) bottom 260px,
+      left max(34px, calc((100vw - 1440px) / 2 + 88px)) top 820px;
+    background-size: 96px, 108px, 92px, 86px, 78px;
+    mask-image:
+      url("/elements__pros.png"),
+      url("/elements__circles.png"),
+      url("/elements__crosses.png"),
+      url("/elements__ovals.png"),
+      url("/elements__pros.png");
     mask-position:
-      left max(18px, calc((100vw - 1440px) / 2 + 36px)) top 320px,
-      right max(22px, calc((100vw - 1440px) / 2 + 44px)) top 680px,
-      left max(20px, calc((100vw - 1440px) / 2 + 42px)) bottom 360px;
+      left max(26px, calc((100vw - 1440px) / 2 + 60px)) top 330px,
+      right max(26px, calc((100vw - 1440px) / 2 + 64px)) top 590px,
+      left max(22px, calc((100vw - 1440px) / 2 + 54px)) bottom 360px,
+      right max(34px, calc((100vw - 1440px) / 2 + 76px)) bottom 260px,
+      left max(34px, calc((100vw - 1440px) / 2 + 88px)) top 820px;
+    mask-size: 96px, 108px, 92px, 86px, 78px;
+    -webkit-mask-image:
+      url("/elements__pros.png"),
+      url("/elements__circles.png"),
+      url("/elements__crosses.png"),
+      url("/elements__ovals.png"),
+      url("/elements__pros.png");
     -webkit-mask-position:
-      left max(18px, calc((100vw - 1440px) / 2 + 36px)) top 320px,
-      right max(22px, calc((100vw - 1440px) / 2 + 44px)) top 680px,
-      left max(20px, calc((100vw - 1440px) / 2 + 42px)) bottom 360px;
-    opacity: 0.88;
+      left max(26px, calc((100vw - 1440px) / 2 + 60px)) top 330px,
+      right max(26px, calc((100vw - 1440px) / 2 + 64px)) top 590px,
+      left max(22px, calc((100vw - 1440px) / 2 + 54px)) bottom 360px,
+      right max(34px, calc((100vw - 1440px) / 2 + 76px)) bottom 260px,
+      left max(34px, calc((100vw - 1440px) / 2 + 88px)) top 820px;
+    -webkit-mask-size: 96px, 108px, 92px, 86px, 78px;
+    opacity: 0.5;
   }
 
   .about-page {
@@ -149,11 +176,11 @@
 
   .about-page::before {
     background-image:
-      linear-gradient(#52cadf, #52cadf),
-      linear-gradient(#52cadf, #52cadf),
-      linear-gradient(#52cadf, #52cadf),
-      linear-gradient(#52cadf, #52cadf),
-      linear-gradient(#52cadf, #52cadf);
+      linear-gradient(#22a7c7, #22a7c7),
+      linear-gradient(#ff3e80, #ff3e80),
+      linear-gradient(#7b5bc8, #7b5bc8),
+      linear-gradient(#b8cb2f, #b8cb2f),
+      linear-gradient(#f2c94c, #f2c94c);
     background-position:
       left max(-170px, calc((100vw - 1440px) / 2 - 190px)) top 180px,
       right max(-150px, calc((100vw - 1440px) / 2 - 190px)) top 360px,
@@ -192,39 +219,174 @@
 
   .about-page::after {
     background-image:
-      linear-gradient(#52cadf, #52cadf),
-      linear-gradient(#52cadf, #52cadf),
-      linear-gradient(#52cadf, #52cadf),
-      linear-gradient(#52cadf, #52cadf);
+      linear-gradient(#ff3e80, #ff3e80),
+      linear-gradient(#f2c94c, #f2c94c),
+      linear-gradient(#b8cb2f, #b8cb2f),
+      linear-gradient(#7b5bc8, #7b5bc8);
     background-position:
-      right max(12px, calc((100vw - 1440px) / 2 + 18px)) top 710px,
-      left max(18px, calc((100vw - 1440px) / 2 + 24px)) top 1360px,
-      right max(24px, calc((100vw - 1440px) / 2 + 32px)) bottom 420px,
-      left max(20px, calc((100vw - 1440px) / 2 + 26px)) bottom 120px;
-    background-size: 96px, 112px, 92px, 84px;
+      right max(-44px, calc((100vw - 1440px) / 2 - 58px)) top 710px,
+      left max(-46px, calc((100vw - 1440px) / 2 - 64px)) top 1360px,
+      right max(-42px, calc((100vw - 1440px) / 2 - 58px)) bottom 420px,
+      left max(-42px, calc((100vw - 1440px) / 2 - 62px)) bottom 120px;
+    background-size: 118px, 132px, 108px, 104px;
     mask-image:
-      url("/pattern__square_flowers.png"),
-      url("/pattern__square_rhombuses.png"),
-      url("/pattern__square_circles.png"),
-      url("/pattern__square_square.png");
+      url("/elements__ovals.png"),
+      url("/elements__crosses.png"),
+      url("/elements__circles.png"),
+      url("/elements__pros.png");
     mask-position:
-      right max(12px, calc((100vw - 1440px) / 2 + 18px)) top 710px,
-      left max(18px, calc((100vw - 1440px) / 2 + 24px)) top 1360px,
-      right max(24px, calc((100vw - 1440px) / 2 + 32px)) bottom 420px,
-      left max(20px, calc((100vw - 1440px) / 2 + 26px)) bottom 120px;
-    mask-size: 96px, 112px, 92px, 84px;
+      right max(-44px, calc((100vw - 1440px) / 2 - 58px)) top 710px,
+      left max(-46px, calc((100vw - 1440px) / 2 - 64px)) top 1360px,
+      right max(-42px, calc((100vw - 1440px) / 2 - 58px)) bottom 420px,
+      left max(-42px, calc((100vw - 1440px) / 2 - 62px)) bottom 120px;
+    mask-size: 118px, 132px, 108px, 104px;
     -webkit-mask-image:
-      url("/pattern__square_flowers.png"),
-      url("/pattern__square_rhombuses.png"),
-      url("/pattern__square_circles.png"),
-      url("/pattern__square_square.png");
+      url("/elements__ovals.png"),
+      url("/elements__crosses.png"),
+      url("/elements__circles.png"),
+      url("/elements__pros.png");
     -webkit-mask-position:
-      right max(12px, calc((100vw - 1440px) / 2 + 18px)) top 710px,
-      left max(18px, calc((100vw - 1440px) / 2 + 24px)) top 1360px,
-      right max(24px, calc((100vw - 1440px) / 2 + 32px)) bottom 420px,
-      left max(20px, calc((100vw - 1440px) / 2 + 26px)) bottom 120px;
-    -webkit-mask-size: 96px, 112px, 92px, 84px;
-    opacity: 0.72;
+      right max(-44px, calc((100vw - 1440px) / 2 - 58px)) top 710px,
+      left max(-46px, calc((100vw - 1440px) / 2 - 64px)) top 1360px,
+      right max(-42px, calc((100vw - 1440px) / 2 - 58px)) bottom 420px,
+      left max(-42px, calc((100vw - 1440px) / 2 - 62px)) bottom 120px;
+    -webkit-mask-size: 118px, 132px, 108px, 104px;
+    opacity: 0.58;
+  }
+
+  .merch-page,
+  .login-page {
+    overflow: hidden;
+  }
+
+  .merch-page::before {
+    background-image:
+      linear-gradient(#ff3e80, #ff3e80),
+      linear-gradient(#22a7c7, #22a7c7),
+      linear-gradient(#7b5bc8, #7b5bc8),
+      linear-gradient(#b8cb2f, #b8cb2f),
+      linear-gradient(#f2c94c, #f2c94c);
+    background-position:
+      left max(-108px, calc((100vw - 1440px) / 2 - 150px)) top 150px,
+      right max(-118px, calc((100vw - 1440px) / 2 - 156px)) top 260px,
+      left max(-130px, calc((100vw - 1440px) / 2 - 170px)) top 620px,
+      right max(-104px, calc((100vw - 1440px) / 2 - 146px)) bottom 240px,
+      left max(-116px, calc((100vw - 1440px) / 2 - 154px)) bottom 120px;
+    background-size: 188px, 210px, 196px, 168px, 178px;
+    mask-image:
+      url("/elements__crosses.png"),
+      url("/elements__pros.png"),
+      url("/elements__ovals.png"),
+      url("/elements__circles.png"),
+      url("/elements__pros.png");
+    mask-position:
+      left max(-108px, calc((100vw - 1440px) / 2 - 150px)) top 150px,
+      right max(-118px, calc((100vw - 1440px) / 2 - 156px)) top 260px,
+      left max(-130px, calc((100vw - 1440px) / 2 - 170px)) top 620px,
+      right max(-104px, calc((100vw - 1440px) / 2 - 146px)) bottom 240px,
+      left max(-116px, calc((100vw - 1440px) / 2 - 154px)) bottom 120px;
+    mask-size: 188px, 210px, 196px, 168px, 178px;
+    -webkit-mask-image:
+      url("/elements__crosses.png"),
+      url("/elements__pros.png"),
+      url("/elements__ovals.png"),
+      url("/elements__circles.png"),
+      url("/elements__pros.png");
+    -webkit-mask-position:
+      left max(-108px, calc((100vw - 1440px) / 2 - 150px)) top 150px,
+      right max(-118px, calc((100vw - 1440px) / 2 - 156px)) top 260px,
+      left max(-130px, calc((100vw - 1440px) / 2 - 170px)) top 620px,
+      right max(-104px, calc((100vw - 1440px) / 2 - 146px)) bottom 240px,
+      left max(-116px, calc((100vw - 1440px) / 2 - 154px)) bottom 120px;
+    -webkit-mask-size: 188px, 210px, 196px, 168px, 178px;
+    opacity: 0.68;
+  }
+
+  .merch-page::after {
+    background-image:
+      linear-gradient(#22a7c7, #22a7c7),
+      linear-gradient(#ff3e80, #ff3e80),
+      linear-gradient(#b8cb2f, #b8cb2f);
+    background-position:
+      right max(-22px, calc((100vw - 1440px) / 2 - 34px)) top 560px,
+      left max(-22px, calc((100vw - 1440px) / 2 - 34px)) top 820px,
+      right max(-26px, calc((100vw - 1440px) / 2 - 38px)) bottom 120px;
+    background-size: 94px, 86px, 78px;
+    mask-image:
+      url("/elements__circles.png"),
+      url("/elements__ovals.png"),
+      url("/elements__crosses.png");
+    mask-position:
+      right max(-22px, calc((100vw - 1440px) / 2 - 34px)) top 560px,
+      left max(-22px, calc((100vw - 1440px) / 2 - 34px)) top 820px,
+      right max(-26px, calc((100vw - 1440px) / 2 - 38px)) bottom 120px;
+    mask-size: 94px, 86px, 78px;
+    -webkit-mask-image:
+      url("/elements__circles.png"),
+      url("/elements__ovals.png"),
+      url("/elements__crosses.png");
+    -webkit-mask-position:
+      right max(-22px, calc((100vw - 1440px) / 2 - 34px)) top 560px,
+      left max(-22px, calc((100vw - 1440px) / 2 - 34px)) top 820px,
+      right max(-26px, calc((100vw - 1440px) / 2 - 38px)) bottom 120px;
+    -webkit-mask-size: 94px, 86px, 78px;
+    opacity: 0.6;
+  }
+
+  .login-page::before {
+    background-image:
+      linear-gradient(#7b5bc8, #7b5bc8),
+      linear-gradient(#ff3e80, #ff3e80),
+      linear-gradient(#22a7c7, #22a7c7);
+    background-position:
+      left max(-96px, calc((100vw - 1180px) / 2 - 120px)) top 120px,
+      right max(-98px, calc((100vw - 1180px) / 2 - 124px)) top 260px,
+      left max(-82px, calc((100vw - 1180px) / 2 - 104px)) bottom 120px;
+    background-size: 176px, 184px, 150px;
+    mask-image:
+      url("/elements__pros.png"),
+      url("/elements__circles.png"),
+      url("/elements__crosses.png");
+    mask-position:
+      left max(-96px, calc((100vw - 1180px) / 2 - 120px)) top 120px,
+      right max(-98px, calc((100vw - 1180px) / 2 - 124px)) top 260px,
+      left max(-82px, calc((100vw - 1180px) / 2 - 104px)) bottom 120px;
+    mask-size: 176px, 184px, 150px;
+    -webkit-mask-image:
+      url("/elements__pros.png"),
+      url("/elements__circles.png"),
+      url("/elements__crosses.png");
+    -webkit-mask-position:
+      left max(-96px, calc((100vw - 1180px) / 2 - 120px)) top 120px,
+      right max(-98px, calc((100vw - 1180px) / 2 - 124px)) top 260px,
+      left max(-82px, calc((100vw - 1180px) / 2 - 104px)) bottom 120px;
+    -webkit-mask-size: 176px, 184px, 150px;
+    opacity: 0.62;
+  }
+
+  .login-page::after {
+    background-image:
+      linear-gradient(#b8cb2f, #b8cb2f),
+      linear-gradient(#f2c94c, #f2c94c);
+    background-position:
+      right max(-38px, calc((100vw - 1180px) / 2 - 56px)) bottom 130px,
+      left max(-32px, calc((100vw - 1180px) / 2 - 52px)) top 440px;
+    background-size: 98px, 86px;
+    mask-image:
+      url("/elements__ovals.png"),
+      url("/elements__circles.png");
+    mask-position:
+      right max(-38px, calc((100vw - 1180px) / 2 - 56px)) bottom 130px,
+      left max(-32px, calc((100vw - 1180px) / 2 - 52px)) top 440px;
+    mask-size: 98px, 86px;
+    -webkit-mask-image:
+      url("/elements__ovals.png"),
+      url("/elements__circles.png");
+    -webkit-mask-position:
+      right max(-38px, calc((100vw - 1180px) / 2 - 56px)) bottom 130px,
+      left max(-32px, calc((100vw - 1180px) / 2 - 52px)) top 440px;
+    -webkit-mask-size: 98px, 86px;
+    opacity: 0.58;
   }
 
   main > * {
@@ -330,15 +492,24 @@
       background-position:
         left 14px top 560px,
         right 14px top 760px,
-        left 16px bottom 360px;
+        left 16px bottom 360px,
+        right 16px bottom 210px,
+        left 18px top 980px;
+      background-size: 68px, 74px, 66px, 62px, 58px;
       mask-position:
         left 14px top 560px,
         right 14px top 760px,
-        left 16px bottom 360px;
+        left 16px bottom 360px,
+        right 16px bottom 210px,
+        left 18px top 980px;
+      mask-size: 68px, 74px, 66px, 62px, 58px;
       -webkit-mask-position:
         left 14px top 560px,
         right 14px top 760px,
-        left 16px bottom 360px;
+        left 16px bottom 360px,
+        right 16px bottom 210px,
+        left 18px top 980px;
+      -webkit-mask-size: 68px, 74px, 66px, 62px, 58px;
     }
 
     .about-page::before {
@@ -386,6 +557,85 @@
         left 18px bottom 92px;
       -webkit-mask-size: 58px, 66px, 56px, 52px;
       opacity: 0.58;
+    }
+
+    .merch-page::before {
+      background-position:
+        left -104px top 116px,
+        right -110px top 300px,
+        left -112px top 660px,
+        right -102px bottom 280px,
+        left -106px bottom 110px;
+      background-size: 136px, 148px, 142px, 124px, 128px;
+      mask-position:
+        left -104px top 116px,
+        right -110px top 300px,
+        left -112px top 660px,
+        right -102px bottom 280px,
+        left -106px bottom 110px;
+      mask-size: 136px, 148px, 142px, 124px, 128px;
+      -webkit-mask-position:
+        left -104px top 116px,
+        right -110px top 300px,
+        left -112px top 660px,
+        right -102px bottom 280px,
+        left -106px bottom 110px;
+      -webkit-mask-size: 136px, 148px, 142px, 124px, 128px;
+      opacity: 0.5;
+    }
+
+    .merch-page::after {
+      background-position:
+        right -34px top 560px,
+        left -34px top 900px,
+        right -36px bottom 110px;
+      background-size: 68px, 64px, 60px;
+      mask-position:
+        right -34px top 560px,
+        left -34px top 900px,
+        right -36px bottom 110px;
+      mask-size: 68px, 64px, 60px;
+      -webkit-mask-position:
+        right -34px top 560px,
+        left -34px top 900px,
+        right -36px bottom 110px;
+      -webkit-mask-size: 68px, 64px, 60px;
+      opacity: 0.5;
+    }
+
+    .login-page::before {
+      background-position:
+        left -112px top 120px,
+        right -116px top 300px,
+        left -104px bottom 110px;
+      background-size: 142px, 150px, 126px;
+      mask-position:
+        left -112px top 120px,
+        right -116px top 300px,
+        left -104px bottom 110px;
+      mask-size: 142px, 150px, 126px;
+      -webkit-mask-position:
+        left -112px top 120px,
+        right -116px top 300px,
+        left -104px bottom 110px;
+      -webkit-mask-size: 142px, 150px, 126px;
+      opacity: 0.46;
+    }
+
+    .login-page::after {
+      background-position:
+        right -38px bottom 130px,
+        left -38px top 500px;
+      background-size: 72px, 64px;
+      mask-position:
+        right -38px bottom 130px,
+        left -38px top 500px;
+      mask-size: 72px, 64px;
+      -webkit-mask-position:
+        right -38px bottom 130px,
+        left -38px top 500px;
+      -webkit-mask-size: 72px, 64px;
+      opacity: 0.48;
     }
 
     main [class*="text-[92px]"],

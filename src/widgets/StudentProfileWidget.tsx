@@ -10,6 +10,7 @@ type StudentProfileWidgetProps = {
 
 export default function StudentProfileWidget({ student }: StudentProfileWidgetProps) {
   const accent = accentStyles[student.accentColor];
+  const isButterAccent = student.accentColor === "blue";
   const rankTextSize = getRankTextSize(student.rank);
   const neighbor = students.find((item) => item.rank === student.rank + 1) || students[0];
   const totalPoints = getStudentTotalPoints(student);
@@ -19,7 +20,7 @@ export default function StudentProfileWidget({ student }: StudentProfileWidgetPr
       <div className="mx-auto max-w-[1440px] px-5 py-10 md:px-8 md:py-14">
         <Link
           href="/top"
-          className="mb-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[14px] font-bold text-[#1f1f1f] shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition hover:text-[#335EC8] [font-family:var(--font-montserrat-alt)]"
+          className="mb-6 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-[14px] font-bold text-[#1f1f1f] shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition hover:text-[#8A5A00] [font-family:var(--font-montserrat-alt)]"
         >
           <span aria-hidden="true">←</span>
           Назад в рейтинг
@@ -39,7 +40,7 @@ export default function StudentProfileWidget({ student }: StudentProfileWidgetPr
                   {student.faculty} · группа {student.group}
                 </p>
               </div>
-              <div className={`${accent.solid} flex h-28 min-w-[144px] items-center justify-center rounded-[24px] px-5 text-white shadow-[0_12px_28px_rgba(0,0,0,0.12)]`}>
+              <div className={`${accent.solid} flex h-28 min-w-[144px] items-center justify-center rounded-[24px] px-5 ${isButterAccent ? "text-[#111]" : "text-white"} shadow-[0_12px_28px_rgba(0,0,0,0.12)]`}>
                 <span className={`${rankTextSize} whitespace-nowrap font-black leading-none [font-family:var(--font-unbounded)]`}>
                   #{student.rank}
                 </span>
@@ -106,7 +107,7 @@ export default function StudentProfileWidget({ student }: StudentProfileWidgetPr
 
               <Link
                 href={`/top/${neighbor.slug}`}
-                className={`mt-5 inline-flex h-12 w-full items-center justify-center rounded-[10px] text-[15px] font-black text-white transition ${accent.button} [font-family:var(--font-montserrat-alt)]`}
+                className={`mt-5 inline-flex h-12 w-full items-center justify-center rounded-[10px] text-[15px] font-black transition ${isButterAccent ? "text-[#111]" : "text-white"} ${accent.button} [font-family:var(--font-montserrat-alt)]`}
               >
                 Следующий участник
               </Link>

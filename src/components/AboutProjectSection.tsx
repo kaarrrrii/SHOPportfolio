@@ -10,7 +10,7 @@ export default function AboutProjectSection() {
             <div className="relative mb-4 sm:mb-6">
               <span
                 aria-hidden="true"
-                className="absolute left-[-64px] top-2 hidden size-[58px] bg-[#52cadf] opacity-95 [mask:url('/pattern__square_square.png')_center/contain_no-repeat] [-webkit-mask:url('/pattern__square_square.png')_center/contain_no-repeat] sm:block"
+                className="absolute left-[-64px] top-2 hidden size-[58px] bg-[#22A7C7] opacity-95 [mask:url('/elements__pros.png')_center/contain_no-repeat] [-webkit-mask:url('/elements__pros.png')_center/contain_no-repeat] sm:block"
               />
               <h2 className="whitespace-nowrap text-[32px] font-black uppercase leading-[1] tracking-normal text-black sm:text-[46px] md:text-[58px] [font-family:var(--font-unbounded)]">
                 О проекте
@@ -48,18 +48,13 @@ export default function AboutProjectSection() {
               <OverlayRibbon
                 text="Сообщество, которое меняет университет"
                 icon={
-                  <Image
-                    src="/pattern__square_rhombuses.png"
-                    alt=""
-                    width={56}
-                    height={56}
-                    unoptimized
-                    className="size-[34px] shrink-0 object-contain opacity-95 sm:size-[48px] md:size-[56px]"
+                  <span
                     aria-hidden="true"
+                    className="block size-[34px] bg-[#111] opacity-95 [mask:url('/elements__circles.png')_center/contain_no-repeat] [-webkit-mask:url('/elements__circles.png')_center/contain_no-repeat] sm:size-[48px] md:size-[56px]"
                   />
                 }
-                className="absolute bottom-3 left-3 max-w-[calc(100%-24px)] gap-2 bg-[#335ec8] px-3 py-2 sm:bottom-6 sm:left-6 sm:max-w-[560px] sm:gap-3 sm:px-4 sm:py-3"
-                textClassName="text-[12px] leading-[1.05] sm:text-[20px] md:text-[27px]"
+                className="absolute bottom-3 left-3 max-w-[calc(100%-24px)] gap-2 bg-[#f2c94c] px-3 py-2 sm:bottom-6 sm:left-6 sm:max-w-[560px] sm:gap-3 sm:px-4 sm:py-3"
+                textClassName="text-[12px] leading-[1.05] text-[#111] sm:text-[20px] md:text-[27px]"
               />
             </article>
           </aside>

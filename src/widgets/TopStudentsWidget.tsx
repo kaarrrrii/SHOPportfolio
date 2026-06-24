@@ -15,11 +15,11 @@ const MAX_VISIBLE_COUNT = 100;
 
 const rowTheme = {
   blue: {
-    stripe: "bg-[#335EC8]",
-    border: "border-[#AFC9EE]",
-    background: "bg-[#F4FAFF]",
-    text: "text-[#335EC8]",
-    score: "bg-[#335EC8]",
+    stripe: "bg-[#F2C94C]",
+    border: "border-[#F4D98B]",
+    background: "bg-[#F2FCF8]",
+    text: "text-[#8A5A00]",
+    score: "bg-[#F2C94C]",
   },
   green: {
     stripe: "bg-[#B8CB2F]",
@@ -97,14 +97,14 @@ export default function TopStudentsWidget({ students }: TopStudentsWidgetProps) 
             <button
               type="button"
               onClick={handleLoadMore}
-              className="inline-flex h-14 min-w-[230px] items-center justify-center rounded-[14px] bg-[#335EC8] px-8 text-[17px] font-black text-white shadow-[0_10px_20px_rgba(51,94,200,0.2)] transition hover:-translate-y-0.5 hover:bg-[#244CA8] [font-family:var(--font-montserrat-alt)]"
+              className="inline-flex h-14 min-w-[230px] items-center justify-center rounded-[14px] bg-[#F2C94C] px-8 text-[17px] font-black text-[#111] shadow-[0_10px_20px_rgba(242,201,76,0.2)] transition hover:-translate-y-0.5 hover:bg-[#E4B938] [font-family:var(--font-montserrat-alt)]"
             >
               Показать ещё
             </button>
           </div>
         ) : null}
 
-        <p className="mt-9 text-center text-[26px] font-semibold leading-tight text-[#335EC8] [font-family:var(--font-montserrat-alt)]">
+        <p className="mt-9 text-center text-[26px] font-semibold leading-tight text-[#8A5A00] [font-family:var(--font-montserrat-alt)]">
           Движемся вместе к вершине!
         </p>
       </section>
@@ -143,7 +143,9 @@ function RatingRow({ student }: RatingRowProps) {
         <span className="block truncate">{student.name}</span>
       </span>
 
-      <span className={`mx-3 hidden min-w-[136px] rounded-[10px] px-4 py-2 text-center font-black leading-none text-white [font-family:var(--font-unbounded)] md:block ${
+      <span className={`mx-3 hidden min-w-[136px] rounded-[10px] px-4 py-2 text-center font-black leading-none [font-family:var(--font-unbounded)] md:block ${
+        themeName === "blue" ? "text-[#111]" : "text-white"
+      } ${
         isTopThree ? `${theme.score} text-[25px]` : `${theme.score} text-[20px]`
       }`}>
         {formatCoins(totalPoints)}

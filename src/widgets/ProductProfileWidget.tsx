@@ -1,13 +1,13 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import MerchImage from "@/components/MerchImage";
 import { FIXED_PICKUP_INFO, type Product } from "@/shared/data/mock";
 import { formatCoinsLabel } from "@/shared/lib/format";
 import { getProductSizeNames, getProductSizeStock, getProductTotalStock, useMerchProducts } from "@/shared/lib/merch";
-import { useShopCart } from "@/shared/lib/shop";
+import { useOrderHistory, useShopCart } from "@/shared/lib/shop";
 import MerchProductCard from "@/widgets/MerchProductCard";
 
 type ProductProfileWidgetProps = {
@@ -27,13 +27,21 @@ export default function ProductProfileWidget({
 }: ProductProfileWidgetProps) {
   const router = useRouter();
   const { addItem } = useShopCart();
+  const { orders } = useOrderHistory();
   const { products } = useMerchProducts();
   const product = products.find((item) => item.slug === productSlug) || null;
+  const hasOrderedProduct = orders.some((order) =>
+    order.items.some((item) => item.productSlug === productSlug),
+  );
   const [selectedSize, setSelectedSize] = useState(initialProduct?.sizes[0]?.size || "One size");
   const [addedLabel, setAddedLabel] = useState("");
   const [actionNotice, setActionNotice] = useState("");
 
   if (!product) {
+    if (hasOrderedProduct && !fakeActions) {
+      return <UnavailableOrderedProduct catalogHref={catalogHref} productSlug={productSlug} />;
+    }
+
     return <MissingProduct catalogHref={catalogHref} />;
   }
 
@@ -74,7 +82,7 @@ export default function ProductProfileWidget({
   }
 
   return (
-    <main className="relative overflow-hidden bg-white">
+    <main className={`relative overflow-hidden bg-white ${fakeActions ? "admin-page" : ""}`}>
       <div className="mx-auto max-w-[1440px] px-5 py-10 md:px-8 md:py-14">
         <Link
           href={catalogHref}
@@ -87,13 +95,11 @@ export default function ProductProfileWidget({
         <section className="grid gap-8 lg:grid-cols-[minmax(0,0.96fr)_minmax(0,1fr)] lg:items-start">
           <div className="relative overflow-hidden rounded-[22px] border border-[#ececec] bg-white p-6 shadow-[0_14px_36px_rgba(0,0,0,0.08)]">
             <div className="relative mx-auto aspect-square max-w-[560px]">
-              <Image
+              <MerchImage
                 src={product.imageSrc}
                 alt=""
                 fill
-                sizes="(max-width: 1024px) 100vw, 560px"
                 className="object-contain p-6"
-                unoptimized
                 priority
               />
             </div>
@@ -127,8 +133,8 @@ export default function ProductProfileWidget({
                       disabled={size.stock <= 0}
                       className={`min-w-[92px] rounded-[9px] border px-4 py-3 text-left text-[14px] font-black transition [font-family:var(--font-montserrat-alt)] ${
                         resolvedSelectedSize === size.size
-                          ? "border-transparent bg-[#335EC8] text-white"
-                          : "border-[#dddddd] bg-[#f8f8f8] text-[#111] hover:-translate-y-0.5 hover:border-[#335EC8]"
+                          ? "border-transparent bg-[#F2C94C] text-[#111]"
+                          : "border-[#dddddd] bg-[#f8f8f8] text-[#111] hover:-translate-y-0.5 hover:border-[#F2C94C]"
                       }`}
                       aria-pressed={resolvedSelectedSize === size.size}
                     >
@@ -149,8 +155,8 @@ export default function ProductProfileWidget({
             ) : null}
 
             {actionNotice ? (
-              <div className="mt-7 rounded-[14px] border border-[#AFC9EE] bg-[#EEF5FF] px-4 py-3">
-                <p className="text-[14px] font-bold text-[#335EC8] [font-family:var(--font-montserrat-alt)]">
+              <div className="mt-7 rounded-[14px] border border-[#F4D98B] bg-[#FFF8DE] px-4 py-3">
+                <p className="text-[14px] font-bold text-[#8A5A00] [font-family:var(--font-montserrat-alt)]">
                   {actionNotice}
                 </p>
               </div>
@@ -169,7 +175,7 @@ export default function ProductProfileWidget({
                 type="button"
                 onClick={() => handleAddToCart(true)}
                 disabled={selectedSizeStock <= 0}
-                className="inline-flex h-14 items-center justify-center rounded-[10px] bg-[#335EC8] px-7 text-[16px] font-black text-white transition hover:bg-[#244CA8] disabled:cursor-not-allowed disabled:bg-[#d9d9d9] [font-family:var(--font-montserrat-alt)]"
+                className="inline-flex h-14 items-center justify-center rounded-[10px] bg-[#F2C94C] px-7 text-[16px] font-black text-[#111] transition hover:bg-[#E4B938] disabled:cursor-not-allowed disabled:bg-[#d9d9d9] [font-family:var(--font-montserrat-alt)]"
               >
                 Перейти к оформлению
               </button>
@@ -183,7 +189,7 @@ export default function ProductProfileWidget({
               Похожие товары
             </h2>
             <div className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {relatedProducts.map((item) => (
+              {relatedProducts.map((item, index) => (
                 <MerchProductCard
                   key={item.slug}
                   title={item.title}
@@ -193,11 +199,55 @@ export default function ProductProfileWidget({
                   href={`${productHrefBase}/${item.slug}`}
                   actionLabel={fakeActions ? "Открыть" : "В корзину"}
                   actionHref={`${productHrefBase}/${item.slug}`}
+                  accentIndex={index + 1}
                 />
               ))}
             </div>
           </section>
         ) : null}
+      </div>
+    </main>
+  );
+}
+
+type UnavailableOrderedProductProps = {
+  catalogHref: string;
+  productSlug: string;
+};
+
+function UnavailableOrderedProduct({ catalogHref, productSlug }: UnavailableOrderedProductProps) {
+  return (
+    <main className="relative overflow-hidden bg-white">
+      <div className="mx-auto max-w-[1440px] px-5 py-14 md:px-8 md:py-20">
+        <section className="mx-auto max-w-[780px] rounded-[24px] bg-white p-8 text-center shadow-[0_12px_34px_rgba(0,0,0,0.08)] md:p-10">
+          <p className="text-[15px] font-black uppercase text-[#E82E78] [font-family:var(--font-montserrat-alt)]">
+            Архивный мерч
+          </p>
+          <h1 className="mt-3 text-[34px] font-black uppercase leading-[1.05] text-[#111] [font-family:var(--font-unbounded)] md:text-[48px]">
+            Товар больше недоступен
+          </h1>
+          <p className="mx-auto mt-4 max-w-[560px] text-[16px] font-semibold leading-[1.45] text-[#555] [font-family:var(--font-montserrat-alt)]">
+            Эта позиция осталась в истории заказа, но сейчас удалена из каталога или снята с выдачи.
+            Добавить ее в корзину уже нельзя.
+          </p>
+          <div className="mx-auto mt-6 max-w-[420px] rounded-[16px] bg-[#FFF0F6] px-4 py-3 text-[13px] font-black text-[#E82E78] [font-family:var(--font-montserrat-alt)]">
+            Артикул: {productSlug}
+          </div>
+          <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link
+              href="/orders"
+              className="inline-flex h-12 items-center justify-center rounded-[10px] bg-[#FF3E80] px-6 text-[15px] font-black text-white transition hover:bg-[#E82E78] [font-family:var(--font-montserrat-alt)]"
+            >
+              Вернуться к заказам
+            </Link>
+            <Link
+              href={catalogHref}
+              className="inline-flex h-12 items-center justify-center rounded-[10px] border border-[#d8d8d8] bg-white px-6 text-[15px] font-black text-[#111] transition hover:border-[#22A7C7] hover:text-[#1688A3] [font-family:var(--font-montserrat-alt)]"
+            >
+              Открыть каталог
+            </Link>
+          </div>
+        </section>
       </div>
     </main>
   );

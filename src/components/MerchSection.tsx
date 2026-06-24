@@ -21,7 +21,7 @@ export default function MerchSection() {
 
         {previewProducts.length > 0 ? (
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {previewProducts.map((product) => (
+            {previewProducts.map((product, index) => (
               <MerchProductCard
                 key={product.slug}
                 title={product.title}
@@ -31,6 +31,7 @@ export default function MerchSection() {
                 href={`/merch/${product.slug}`}
                 actionHref={`/merch/${product.slug}`}
                 actionLabel="Выбрать"
+                accentIndex={index}
               />
             ))}
           </div>

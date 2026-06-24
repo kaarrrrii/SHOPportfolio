@@ -84,7 +84,7 @@ export default function CheckoutSuccessWidget({ orderId }: CheckoutSuccessWidget
             <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Link
                 href="/orders"
-                className="inline-flex h-12 items-center justify-center rounded-[10px] bg-[#335EC8] px-6 text-[15px] font-black text-white transition hover:bg-[#244CA8] [font-family:var(--font-montserrat-alt)]"
+                className="inline-flex h-12 items-center justify-center rounded-[10px] bg-[#F2C94C] px-6 text-[15px] font-black text-[#111] transition hover:bg-[#E4B938] [font-family:var(--font-montserrat-alt)]"
               >
                 Смотреть историю
               </Link>

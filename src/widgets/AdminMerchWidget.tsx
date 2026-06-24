@@ -2,9 +2,9 @@
 
 import type { ChangeEvent, FormEvent } from "react";
 import { useMemo, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import ConfirmDialog from "@/components/ConfirmDialog";
+import MerchImage from "@/components/MerchImage";
 import type { Product, ProductCategory, ProductSizeStock } from "@/shared/data/mock";
 import { authorizeByCredentials, useAdminAuth } from "@/shared/lib/auth";
 import { formatCoinsLabel } from "@/shared/lib/format";
@@ -12,10 +12,12 @@ import {
   createMerchProductSlug,
   getCategoryLabel,
   getProductTotalStock,
+  isMerchStorageError,
   useMerchCategories,
   useMerchProducts,
   type ProductCategoryItem,
 } from "@/shared/lib/merch";
+import { saveMerchImageBlob } from "@/shared/lib/merch-images";
 import { ORDER_STATUSES, useOrderHistory, type OrderStatus } from "@/shared/lib/shop";
 
 type AdminSection = "merch" | "orders";
@@ -46,6 +48,15 @@ type PendingStatusChange = {
   nextStatus: OrderStatus;
 };
 
+type AdminMessage = {
+  tone: "info" | "success" | "error";
+  text: string;
+};
+
+const MAX_PRODUCT_IMAGE_SOURCE_BYTES = 4 * 1024 * 1024;
+const MAX_PRODUCT_IMAGE_BLOB_BYTES = 650_000;
+const PRODUCT_IMAGE_MAX_SIDE = 1200;
+
 let sizeRowSeed = 0;
 
 export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidgetProps) {
@@ -56,7 +67,7 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
   const firstCategory = categories[0]?.value || "hoodies";
   const [form, setForm] = useState<ProductFormState>(() => createEmptyForm(firstCategory));
   const [editingSlug, setEditingSlug] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<AdminMessage | null>(null);
   const [categoryDraft, setCategoryDraft] = useState("");
   const [pendingStatusChange, setPendingStatusChange] = useState<PendingStatusChange | null>(null);
   const activeFormCategory = categories.some((category) => category.value === form.category)
@@ -74,6 +85,10 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
 
   if (!isAuthorized) {
     return <AdminAuthGate />;
+  }
+
+  function showMessage(text: string, tone: AdminMessage["tone"] = "info") {
+    setMessage({ text, tone });
   }
 
   function updateField<Field extends keyof ProductFormState>(field: Field, value: ProductFormState[Field]) {
@@ -111,64 +126,93 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
     });
   }
 
-  function handleImageUpload(event: ChangeEvent<HTMLInputElement>) {
+  async function handleImageUpload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
+    const input = event.currentTarget;
 
     if (!file) {
       return;
     }
 
     if (!file.type.startsWith("image/")) {
-      setMessage("Выберите файл изображения");
-      event.currentTarget.value = "";
+      showMessage("Выберите файл изображения", "error");
+      input.value = "";
       return;
     }
 
-    const reader = new FileReader();
+    if (file.size > MAX_PRODUCT_IMAGE_SOURCE_BYTES) {
+      showMessage("Изображение слишком большое. Загрузите файл до 4 МБ.", "error");
+      input.value = "";
+      return;
+    }
 
-    reader.onload = () => {
-      if (typeof reader.result === "string") {
-        updateField("imageSrc", reader.result);
-        setMessage("Изображение загружено");
-      }
-    };
-    reader.onerror = () => setMessage("Не удалось загрузить изображение");
-    reader.readAsDataURL(file);
+    showMessage("Подготавливаю изображение...", "info");
+
+    try {
+      const imageSrc = await prepareProductImage(file);
+
+      updateField("imageSrc", imageSrc);
+      showMessage("Изображение загружено и подготовлено для сохранения", "success");
+    } catch (error) {
+      showMessage(getImageUploadErrorMessage(error), "error");
+      input.value = "";
+    }
   }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    const validationError = validateProductForm({ ...form, category: activeFormCategory });
+
+    if (validationError) {
+      showMessage(validationError, "error");
+      return;
+    }
 
     const product = buildProductFromForm(
       { ...form, category: activeFormCategory },
       products,
       editingSlug || undefined,
     );
-    saveProduct(product);
-    setForm(createFormFromProduct(product));
-    setEditingSlug(product.slug);
-    setMessage(editingSlug ? "Товар обновлен" : "Товар добавлен");
+
+    try {
+      await saveProduct(product);
+      setForm(createFormFromProduct(product));
+      setEditingSlug(product.slug);
+      showMessage(editingSlug ? "Товар обновлен" : "Товар добавлен", "success");
+    } catch (error) {
+      showMessage(
+        isMerchStorageError(error)
+          ? "Не удалось сохранить товар: изображение или каталог слишком большие. Загрузите изображение меньшего размера или удалите лишние большие фото."
+          : "Не удалось сохранить товар. Проверьте данные и попробуйте еще раз.",
+        "error",
+      );
+    }
   }
 
   function handleCreateNew() {
     setForm(createEmptyForm(firstCategory));
     setEditingSlug("");
-    setMessage("");
+    setMessage(null);
   }
 
   function handleAddCategory() {
     const label = categoryDraft.trim();
 
     if (!label) {
-      setMessage("Введите название категории");
+      showMessage("Введите название категории", "error");
       return;
     }
 
-    const category = addCategory(label);
+    try {
+      const category = addCategory(label);
 
-    setCategoryDraft("");
-    setForm((currentForm) => ({ ...currentForm, category: category.value }));
-    setMessage("Категория добавлена");
+      setCategoryDraft("");
+      setForm((currentForm) => ({ ...currentForm, category: category.value }));
+      showMessage("Категория добавлена", "success");
+    } catch {
+      showMessage("Не удалось сохранить категорию. Проверьте данные и попробуйте еще раз.", "error");
+    }
   }
 
   function handleRemoveCategory(category: ProductCategoryItem) {
@@ -178,15 +222,22 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
       return;
     }
 
-    const removed = removeCategory(category.value);
+    try {
+      const removed = removeCategory(category.value);
 
-    setMessage(removed ? "Категория удалена" : "Нельзя удалить последнюю категорию");
+      showMessage(
+        removed ? "Категория удалена" : "Нельзя удалить последнюю категорию",
+        removed ? "success" : "error",
+      );
+    } catch {
+      showMessage("Не удалось удалить категорию. Попробуйте еще раз.", "error");
+    }
   }
 
   function handleEditProduct(product: Product) {
     setForm(createFormFromProduct(product));
     setEditingSlug(product.slug);
-    setMessage(`Редактирование: ${product.title}`);
+    showMessage(`Редактирование: ${product.title}`, "info");
   }
 
   function handleRemoveProduct(product: Product) {
@@ -196,13 +247,18 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
       return;
     }
 
-    removeProduct(product.slug);
+    try {
+      removeProduct(product.slug);
+    } catch {
+      showMessage("Не удалось удалить товар. Попробуйте еще раз.", "error");
+      return;
+    }
 
     if (editingSlug === product.slug) {
       handleCreateNew();
     }
 
-    setMessage("Товар удален");
+    showMessage("Товар удален", "success");
   }
 
   function handleConfirmOrderStatus(orderId: string, currentStatus: OrderStatus, nextStatus: OrderStatus) {
@@ -219,7 +275,7 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
     }
 
     setOrderStatus(pendingStatusChange.orderId, pendingStatusChange.nextStatus);
-    setMessage(`Статус обновлен: ${pendingStatusChange.nextStatus}`);
+    showMessage(`Статус обновлен: ${pendingStatusChange.nextStatus}`, "success");
     setPendingStatusChange(null);
   }
 
@@ -306,8 +362,12 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
                 {editingSlug ? "Сохранить изменения" : "Добавить товар"}
               </button>
               {message ? (
-                <p className="text-[14px] font-black text-[#1688A3] [font-family:var(--font-montserrat-alt)]">
-                  {message}
+                <p
+                  role={message.tone === "error" ? "alert" : "status"}
+                  aria-live="polite"
+                  className={`rounded-[10px] px-4 py-3 text-[14px] font-black [font-family:var(--font-montserrat-alt)] ${getAdminMessageClassName(message.tone)}`}
+                >
+                  {message.text}
                 </p>
               ) : null}
             </div>
@@ -325,7 +385,7 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
               </div>
               <Link
                 href="/admin/showcase"
-                className="inline-flex h-11 w-full items-center justify-center rounded-[10px] border border-[#d8d8d8] bg-white px-4 text-[14px] font-black text-[#111] transition hover:border-[#335EC8] hover:text-[#335EC8] sm:w-auto [font-family:var(--font-montserrat-alt)]"
+                className="inline-flex h-11 w-full items-center justify-center rounded-[10px] border border-[#d8d8d8] bg-white px-4 text-[14px] font-black text-[#111] transition hover:border-[#F2C94C] hover:text-[#8A5A00] sm:w-auto [font-family:var(--font-montserrat-alt)]"
               >
                 Открыть витрину
               </Link>
@@ -405,12 +465,47 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
                         return (
                           <div
                             key={`${order.id}-${item.productSlug}-${item.size}`}
-                            className="min-w-0 break-words rounded-[12px] bg-white px-4 py-3 text-[14px] font-bold text-[#555] [font-family:var(--font-montserrat-alt)]"
+                            className="grid min-w-0 gap-3 rounded-[12px] bg-white p-3 text-[14px] font-bold text-[#555] shadow-[0_4px_14px_rgba(0,0,0,0.04)] [font-family:var(--font-montserrat-alt)] sm:grid-cols-[64px_minmax(0,1fr)_auto] sm:items-center"
                           >
-                            <span className="font-black text-[#111]">
-                              {product?.title || "Товар удален"}
-                            </span>{" "}
-                            · {item.size}
+                            {product ? (
+                              <Link
+                                href={`/admin/showcase/${product.slug}`}
+                                className="relative aspect-square overflow-hidden rounded-[10px] bg-[#F8F8F8]"
+                              >
+                                <MerchImage
+                                  src={product.imageSrc}
+                                  alt=""
+                                  fill
+                                  className="object-contain p-2"
+                                />
+                              </Link>
+                            ) : (
+                              <div className="grid aspect-square place-items-center rounded-[10px] bg-[#F8F8F8] text-[11px] font-black uppercase text-[#999]">
+                                Нет фото
+                              </div>
+                            )}
+
+                            <div className="min-w-0">
+                              {product ? (
+                                <Link
+                                  href={`/admin/showcase/${product.slug}`}
+                                  className="break-words font-black text-[#111] transition hover:text-[#8A5A00]"
+                                >
+                                  {product.title}
+                                </Link>
+                              ) : (
+                                <p className="break-words font-black text-[#111]">
+                                  Товар удален
+                                </p>
+                              )}
+                              <p className="mt-1 text-[13px] font-bold text-[#666]">
+                                Размер: {item.size} · {item.quantity} шт.
+                              </p>
+                            </div>
+
+                            <p className="text-left text-[14px] font-black text-[#111] [font-family:var(--font-unbounded)] sm:text-right">
+                              {product ? formatCoinsLabel(product.price * item.quantity) : `${item.quantity} шт.`}
+                            </p>
                           </div>
                         );
                       })}
@@ -557,7 +652,7 @@ function OrderInfoTile({ label, value }: OrderInfoTileProps) {
 
 type InventoryStockPanelProps = {
   products: Product[];
-  onSaveProduct: (product: Product) => void;
+  onSaveProduct: (product: Product) => Promise<void>;
 };
 
 type ProductStockDraftSize = {
@@ -567,6 +662,7 @@ type ProductStockDraftSize = {
 
 function InventoryStockPanel({ products, onSaveProduct }: InventoryStockPanelProps) {
   const [stockDrafts, setStockDrafts] = useState<Record<string, ProductStockDraftSize[]>>({});
+  const [stockMessage, setStockMessage] = useState<AdminMessage | null>(null);
 
   function getDraftSizes(product: Product) {
     return stockDrafts[product.slug] || createStockDraftSizes(product);
@@ -627,8 +723,15 @@ function InventoryStockPanel({ products, onSaveProduct }: InventoryStockPanelPro
     });
   }
 
-  function saveDraft(product: Product) {
+  async function saveDraft(product: Product) {
     const draftSizes = getDraftSizes(product);
+    const validationError = validateProductSizeInputs(draftSizes);
+
+    if (validationError) {
+      setStockMessage({ text: validationError, tone: "error" });
+      return;
+    }
+
     const nextProduct = {
       ...product,
       sizes: normalizeProductSizeRows(
@@ -640,8 +743,13 @@ function InventoryStockPanel({ products, onSaveProduct }: InventoryStockPanelPro
       ),
     };
 
-    onSaveProduct(nextProduct);
-    resetDraft(product);
+    try {
+      await onSaveProduct(nextProduct);
+      resetDraft(product);
+      setStockMessage({ text: `Остатки обновлены: ${product.title}`, tone: "success" });
+    } catch {
+      setStockMessage({ text: "Не удалось сохранить остатки. Проверьте данные и попробуйте еще раз.", tone: "error" });
+    }
   }
 
   return (
@@ -660,6 +768,16 @@ function InventoryStockPanel({ products, onSaveProduct }: InventoryStockPanelPro
         </div>
       </div>
 
+      {stockMessage ? (
+        <p
+          role={stockMessage.tone === "error" ? "alert" : "status"}
+          aria-live="polite"
+          className={`mt-4 rounded-[10px] px-4 py-3 text-[14px] font-black [font-family:var(--font-montserrat-alt)] ${getAdminMessageClassName(stockMessage.tone)}`}
+        >
+          {stockMessage.text}
+        </p>
+      ) : null}
+
       {products.length > 0 ? (
         <div className="mt-5 grid gap-3">
           {products.map((product) => {
@@ -672,13 +790,11 @@ function InventoryStockPanel({ products, onSaveProduct }: InventoryStockPanelPro
               className="grid gap-4 rounded-[16px] border border-[#ececec] bg-[#fbfbfb] p-3 sm:p-4 lg:grid-cols-[136px_minmax(0,1fr)]"
             >
               <div className="relative aspect-square overflow-hidden rounded-[14px] bg-white">
-                <Image
+                <MerchImage
                   src={product.imageSrc}
                   alt=""
                   fill
-                  sizes="136px"
                   className="object-contain p-3"
-                  unoptimized
                 />
               </div>
 
@@ -923,13 +1039,11 @@ function ImageUploadField({ imageSrc, onChange }: ImageUploadFieldProps) {
       <span>Изображение</span>
       <div className="grid gap-3 rounded-[14px] border border-[#dedede] bg-[#fbfbfb] p-3 sm:grid-cols-[116px_minmax(0,1fr)] sm:items-center">
         <div className="relative aspect-square overflow-hidden rounded-[12px] bg-white">
-          <Image
+          <MerchImage
             src={imageSrc || "/merch__hero.png"}
             alt=""
             fill
-            sizes="116px"
             className="object-contain p-2"
-            unoptimized
           />
         </div>
         <label className="inline-flex h-12 w-full cursor-pointer items-center justify-center rounded-[10px] bg-[#22A7C7] px-5 text-[14px] font-black text-white transition hover:bg-[#1688A3] sm:w-auto">
@@ -1025,13 +1139,11 @@ function ProductAdminRow({ product, isEditing, onEdit, onRemove }: ProductAdminR
   return (
     <article className={`grid min-w-0 gap-3 rounded-[16px] border p-3 sm:grid-cols-[92px_minmax(0,1fr)] ${isEditing ? "border-[#C7B8F1] bg-[#F8F5FF]" : "border-[#eeeeee] bg-[#fbfbfb]"}`}>
       <Link href={`/admin/showcase/${product.slug}`} className="relative aspect-square overflow-hidden rounded-[12px] bg-white">
-        <Image
+        <MerchImage
           src={product.imageSrc}
           alt=""
           fill
-          sizes="92px"
           className="object-contain p-2"
-          unoptimized
         />
       </Link>
       <div className="min-w-0">
@@ -1052,7 +1164,7 @@ function ProductAdminRow({ product, isEditing, onEdit, onRemove }: ProductAdminR
           <button
             type="button"
             onClick={onEdit}
-            className="h-10 rounded-[9px] bg-[#335EC8] px-4 text-[13px] font-black text-white transition hover:bg-[#244CA8] [font-family:var(--font-montserrat-alt)]"
+            className="h-10 rounded-[9px] bg-[#F2C94C] px-4 text-[13px] font-black text-[#111] transition hover:bg-[#E4B938] [font-family:var(--font-montserrat-alt)]"
           >
             Изменить
           </button>
@@ -1075,6 +1187,18 @@ function ProductAdminRow({ product, isEditing, onEdit, onRemove }: ProductAdminR
   );
 }
 
+function getAdminMessageClassName(tone: AdminMessage["tone"]) {
+  if (tone === "error") {
+    return "bg-[#FFF0F6] text-[#E82E78]";
+  }
+
+  if (tone === "success") {
+    return "bg-[#FFF8DE] text-[#8A5A00]";
+  }
+
+  return "bg-[#F2FCFF] text-[#1688A3]";
+}
+
 function createEmptyForm(category: ProductCategory): ProductFormState {
   return {
     slug: "",
@@ -1089,6 +1213,126 @@ function createEmptyForm(category: ProductCategory): ProductFormState {
       createSizeRow("L 46", "1"),
     ],
   };
+}
+
+function validateProductForm(form: ProductFormState) {
+  if (!form.title.trim()) {
+    return "Введите название товара";
+  }
+
+  const price = parseNonNegativeInteger(form.price);
+
+  if (price === null || price <= 0) {
+    return "Укажите цену целым числом больше 0";
+  }
+
+  if (!form.description.trim()) {
+    return "Добавьте описание товара";
+  }
+
+  const sizeError = validateProductSizeInputs(form.sizes);
+
+  if (sizeError) {
+    return sizeError;
+  }
+
+  const imageSrc = form.imageSrc.trim();
+
+  if (!imageSrc) {
+    return "Загрузите изображение товара";
+  }
+
+  return "";
+}
+
+async function prepareProductImage(file: File) {
+  const image = await loadImageFromFile(file);
+  const variants = [
+    { maxSide: PRODUCT_IMAGE_MAX_SIDE, quality: 0.82 },
+    { maxSide: 940, quality: 0.76 },
+    { maxSide: 760, quality: 0.7 },
+  ];
+
+  for (const variant of variants) {
+    const blob = await drawCompressedImage(image, variant.maxSide, variant.quality);
+
+    if (blob.size <= MAX_PRODUCT_IMAGE_BLOB_BYTES) {
+      try {
+        return await saveMerchImageBlob(blob);
+      } catch (error) {
+        throw new Error("PRODUCT_IMAGE_STORAGE_FAILED", { cause: error });
+      }
+    }
+  }
+
+  throw new Error("PRODUCT_IMAGE_TOO_LARGE");
+}
+
+function loadImageFromFile(file: File) {
+  return new Promise<HTMLImageElement>((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new window.Image();
+
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("PRODUCT_IMAGE_DECODE_FAILED"));
+    };
+    image.src = url;
+  });
+}
+
+async function drawCompressedImage(image: HTMLImageElement, maxSide: number, quality: number) {
+  const sourceWidth = image.naturalWidth || image.width;
+  const sourceHeight = image.naturalHeight || image.height;
+  const scale = Math.min(1, maxSide / Math.max(sourceWidth, sourceHeight));
+  const width = Math.max(1, Math.round(sourceWidth * scale));
+  const height = Math.max(1, Math.round(sourceHeight * scale));
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("PRODUCT_IMAGE_CANVAS_UNAVAILABLE");
+  }
+
+  canvas.width = width;
+  canvas.height = height;
+  context.drawImage(image, 0, 0, width, height);
+
+  const webpBlob = await canvasToImageBlob(canvas, "image/webp", quality);
+
+  if (webpBlob?.type === "image/webp") {
+    return webpBlob;
+  }
+
+  const jpegBlob = await canvasToImageBlob(canvas, "image/jpeg", quality);
+
+  if (!jpegBlob) {
+    throw new Error("PRODUCT_IMAGE_ENCODE_FAILED");
+  }
+
+  return jpegBlob;
+}
+
+function canvasToImageBlob(canvas: HTMLCanvasElement, type: string, quality: number) {
+  return new Promise<Blob | null>((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), type, quality);
+  });
+}
+
+function getImageUploadErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message === "PRODUCT_IMAGE_TOO_LARGE") {
+    return "Изображение слишком большое даже после сжатия. Выберите файл с меньшим разрешением.";
+  }
+
+  if (error instanceof Error && error.message === "PRODUCT_IMAGE_STORAGE_FAILED") {
+    return "Не удалось сохранить изображение в браузере. Освободите место или выберите файл меньшего размера.";
+  }
+
+  return "Не удалось загрузить изображение. Попробуйте PNG, JPG или WebP.";
 }
 
 function createFormFromProduct(product: Product): ProductFormState {
@@ -1125,10 +1369,51 @@ function buildProductFromForm(
   };
 }
 
-function normalizePositiveNumber(value: string) {
-  const number = Math.round(Number(value));
+function validateProductSizeInputs(sizes: Array<{ size: string; stock: string }>) {
+  if (sizes.length === 0) {
+    return "Добавьте хотя бы один размер";
+  }
 
-  return Number.isFinite(number) && number >= 0 ? number : 0;
+  const usedSizes = new Set<string>();
+
+  for (const item of sizes) {
+    const size = item.size.trim();
+    const stock = parseNonNegativeInteger(item.stock);
+
+    if (!size) {
+      return "Заполните название размера или удалите пустую строку";
+    }
+
+    if (usedSizes.has(size.toLowerCase())) {
+      return `Размер "${size}" указан дважды`;
+    }
+
+    if (stock === null) {
+      return `Укажите остаток для "${size}" целым числом от 0`;
+    }
+
+    usedSizes.add(size.toLowerCase());
+  }
+
+  return "";
+}
+
+function parseNonNegativeInteger(value: string) {
+  const normalizedValue = value.trim();
+
+  if (!normalizedValue) {
+    return null;
+  }
+
+  const number = Number(normalizedValue);
+
+  return Number.isInteger(number) && number >= 0 ? number : null;
+}
+
+function normalizePositiveNumber(value: string) {
+  const parsedNumber = parseNonNegativeInteger(value);
+
+  return parsedNumber ?? 0;
 }
 
 function createSizeRow(size: string, stock: string): ProductFormSize {

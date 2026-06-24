@@ -7,8 +7,10 @@ export default function MerchPage() {
   return (
     <>
       <Header />
-      <MerchHero />
-      <MerchCatalogWidget />
+      <main className="merch-page bg-white">
+        <MerchHero />
+        <MerchCatalogWidget />
+      </main>
       <BrandFooter />
     </>
   );

@@ -32,8 +32,8 @@ const headerNavAccents: Record<string, HeaderNavAccent> = {
     inactive: "text-[#1f1f1f] hover:text-[#9AC225]",
   },
   "/merch": {
-    active: "text-[#335EC8] shadow-[inset_0_-3px_0_#335EC8]",
-    inactive: "text-[#1f1f1f] hover:text-[#335EC8]",
+    active: "text-[#8A5A00] shadow-[inset_0_-3px_0_#F2C94C]",
+    inactive: "text-[#1f1f1f] hover:text-[#8A5A00]",
   },
   "/cart": {
     active: "text-[#22A7C7] shadow-[inset_0_-3px_0_#22A7C7]",
@@ -46,8 +46,8 @@ const headerNavAccents: Record<string, HeaderNavAccent> = {
 };
 
 const defaultHeaderNavAccent: HeaderNavAccent = {
-  active: "text-[#335EC8] shadow-[inset_0_-3px_0_#335EC8]",
-  inactive: "text-[#1f1f1f] hover:text-[#335EC8]",
+  active: "text-[#8A5A00] shadow-[inset_0_-3px_0_#F2C94C]",
+  inactive: "text-[#1f1f1f] hover:text-[#8A5A00]",
 };
 
 export default function Header() {

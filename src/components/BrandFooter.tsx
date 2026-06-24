@@ -31,7 +31,7 @@ export default function BrandFooter({ className }: BrandFooterProps) {
           <div className="flex items-center gap-3">
             <span
               aria-hidden="true"
-              className="block h-14 w-8 bg-[#335EC8] [mask:url('/osu_logo.png')_center/contain_no-repeat] [-webkit-mask:url('/osu_logo.png')_center/contain_no-repeat]"
+              className="block h-14 w-8 bg-[#F2C94C] [mask:url('/osu_logo.png')_center/contain_no-repeat] [-webkit-mask:url('/osu_logo.png')_center/contain_no-repeat]"
             />
             <p className="max-w-[170px] text-[12px] font-bold uppercase leading-[1.1] text-[#1f1f1f] [font-family:var(--font-montserrat-alt)]">
               Оренбургский государственный университет

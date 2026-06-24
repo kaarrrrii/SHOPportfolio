@@ -3,6 +3,7 @@
 import { useCallback, useSyncExternalStore } from "react";
 import type { Product, ProductCategory, ProductSizeStock } from "@/shared/data/mock";
 import { products as defaultProducts } from "@/shared/data/mock";
+import { migrateInlineMerchProductImages } from "@/shared/lib/merch-images";
 
 export type ProductCategoryItem = {
   value: ProductCategory;
@@ -29,6 +30,17 @@ let productSnapshotKey: string | null = null;
 let productSnapshot: Product[] = defaultProducts;
 let categorySnapshotKey: string | null = null;
 let categorySnapshot: ProductCategoryItem[] = DEFAULT_PRODUCT_CATEGORIES;
+
+export class MerchStorageError extends Error {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = "MerchStorageError";
+  }
+}
+
+export function isMerchStorageError(error: unknown) {
+  return error instanceof MerchStorageError;
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -179,9 +191,17 @@ function writeMerchCategoriesSnapshot(nextCategories: ProductCategoryItem[]) {
   const normalizedCategories = normalizeCategories(nextCategories);
   const serializedCategories = JSON.stringify(normalizedCategories);
 
+  try {
+    window.localStorage.setItem(CATEGORY_STORAGE_KEY, serializedCategories);
+  } catch (error) {
+    throw new MerchStorageError(
+      "Не удалось сохранить категории: данные слишком большие для хранилища браузера.",
+      { cause: error },
+    );
+  }
+
   categorySnapshot = normalizedCategories;
   categorySnapshotKey = serializedCategories;
-  window.localStorage.setItem(CATEGORY_STORAGE_KEY, serializedCategories);
   window.dispatchEvent(new CustomEvent(CATEGORY_EVENT_NAME));
 }
 
@@ -316,9 +336,17 @@ function writeMerchProductsSnapshot(nextProducts: Product[]) {
   const normalizedProducts = normalizeProducts(nextProducts);
   const serializedProducts = JSON.stringify(normalizedProducts);
 
+  try {
+    window.localStorage.setItem(PRODUCT_STORAGE_KEY, serializedProducts);
+  } catch (error) {
+    throw new MerchStorageError(
+      "Не удалось сохранить каталог: данные слишком большие для хранилища браузера.",
+      { cause: error },
+    );
+  }
+
   productSnapshot = normalizedProducts;
   productSnapshotKey = serializedProducts;
-  window.localStorage.setItem(PRODUCT_STORAGE_KEY, serializedProducts);
   window.dispatchEvent(new CustomEvent(PRODUCT_EVENT_NAME));
 }
 
@@ -361,14 +389,25 @@ export function useMerchProducts() {
     () => defaultProducts,
   );
 
-  const saveProduct = useCallback((nextProduct: Product) => {
+  const saveProduct = useCallback(async (nextProduct: Product) => {
     const currentProducts = readMerchProductsSnapshot();
     const existingProduct = currentProducts.some((product) => product.slug === nextProduct.slug);
     const nextProducts = existingProduct
       ? currentProducts.map((product) => (product.slug === nextProduct.slug ? nextProduct : product))
       : [nextProduct, ...currentProducts];
 
-    writeMerchProductsSnapshot(nextProducts);
+    try {
+      writeMerchProductsSnapshot(await migrateInlineMerchProductImages(nextProducts));
+    } catch (error) {
+      if (isMerchStorageError(error)) {
+        throw error;
+      }
+
+      throw new MerchStorageError(
+        "Не удалось сохранить каталог: изображение не удалось перенести в хранилище браузера.",
+        { cause: error },
+      );
+    }
   }, []);
 
   const removeProduct = useCallback((productSlug: string) => {

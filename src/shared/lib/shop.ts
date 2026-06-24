@@ -165,18 +165,26 @@ function normalizeOrderItems(value: unknown): OrderItem[] {
       return [];
     }
 
-    const product = getProductSafe(rawItem.productSlug);
+    const productSlug = rawItem.productSlug.trim();
 
-    if (!product) {
+    if (!productSlug) {
       return [];
     }
 
+    const product = getProductSafe(productSlug);
+    const productSizes = product ? getProductSizeNames(product) : [];
+    const rawSize = typeof rawItem.size === "string" && rawItem.size.trim()
+      ? rawItem.size.trim()
+      : productSizes[0] || "One size";
+
     return [{
-      productSlug: product.slug,
-      quantity: normalizeQuantity(rawItem.quantity, getProductSizeStock(product, typeof rawItem.size === "string" ? rawItem.size : "")),
-      size: typeof rawItem.size === "string" && getProductSizeNames(product).includes(rawItem.size)
-        ? rawItem.size
-        : getProductSizeNames(product)[0] || "One size",
+      productSlug: product?.slug || productSlug,
+      quantity: normalizeQuantity(rawItem.quantity, product ? getProductSizeStock(product, rawSize) : undefined),
+      size: product && productSizes.length > 0
+        ? productSizes.includes(rawSize)
+          ? rawSize
+          : productSizes[0]
+        : rawSize,
     }];
   });
 }
