@@ -3,7 +3,7 @@
 import type { FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { authorizeByCredentials, useEsdirAuthRole } from "@/shared/lib/auth";
 import { formatCoins, formatCoinsLabel } from "@/shared/lib/format";
 import { getStudentBySlug, type Order, type Product } from "@/shared/data/mock";
@@ -25,20 +25,6 @@ const profileStudent = getStudentBySlug("smirnova-anna") ?? {
 };
 
 const achievementPoints = [180, 150, 120];
-const PENDING_ACHIEVEMENTS_STORAGE_KEY = "zazhigay-pending-achievements";
-const PENDING_ACHIEVEMENTS_EVENT_NAME = "zazhigay-pending-achievements-updated";
-
-type PendingAchievement = {
-  id: string;
-  title: string;
-  description: string;
-  submittedAt: string;
-  status: "На проверке";
-};
-
-const emptyPendingAchievements: PendingAchievement[] = [];
-let pendingAchievementsSnapshotKey: string | null = null;
-let pendingAchievementsSnapshot: PendingAchievement[] = emptyPendingAchievements;
 
 export default function AccountWidget() {
   const router = useRouter();
@@ -49,11 +35,6 @@ export default function AccountWidget() {
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [loginError, setLoginError] = useState("");
-  const [achievementTitle, setAchievementTitle] = useState("");
-  const [achievementDescription, setAchievementDescription] = useState("");
-  const [achievementError, setAchievementError] = useState("");
-  const [achievementMessage, setAchievementMessage] = useState("");
-  const pendingAchievements = usePendingAchievements();
   const productsBySlug = useMemo(
     () => new Map(products.map((product) => [product.slug, product])),
     [products],
@@ -88,39 +69,6 @@ export default function AccountWidget() {
     if (role === "admin") {
       router.replace("/admin/merch");
     }
-  }
-
-  function handleAchievementSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    const title = achievementTitle.trim();
-    const description = achievementDescription.trim();
-
-    if (!title) {
-      setAchievementError("Укажите название достижения");
-      setAchievementMessage("");
-      return;
-    }
-
-    if (!description) {
-      setAchievementError("Добавьте описание для куратора");
-      setAchievementMessage("");
-      return;
-    }
-
-    const submittedAchievement: PendingAchievement = {
-      id: createPendingAchievementId(),
-      title,
-      description,
-      submittedAt: formatSubmittedAt(new Date()),
-      status: "На проверке",
-    };
-
-    writePendingAchievements([submittedAchievement, ...pendingAchievements]);
-    setAchievementTitle("");
-    setAchievementDescription("");
-    setAchievementError("");
-    setAchievementMessage("Достижение отправлено на проверку куратору");
   }
 
   if (!authRole) {
@@ -286,129 +234,31 @@ export default function AccountWidget() {
             </p>
           </div>
 
-          <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-            <div className="grid gap-3">
-              {achievements.map((achievement, index) => (
-                <article
-                  key={achievement.title}
-                  className="grid gap-4 rounded-[18px] border border-[#eeeeee] bg-[#fbfbfb] p-4 sm:grid-cols-[64px_minmax(0,1fr)_120px] sm:items-center"
-                >
-                  <span
-                    aria-hidden="true"
-                    className={`block size-12 ${
-                      ["bg-[#FF3E80]", "bg-[#F2C94C]", "bg-[#22A7C7]", "bg-[#7B5BC8]"][index % 4]
-                    } [mask:url('/pattern__square_flowers.png')_center/contain_no-repeat] [-webkit-mask:url('/pattern__square_flowers.png')_center/contain_no-repeat]`}
-                  />
-                  <div>
-                    <h3 className="text-[18px] font-black leading-[1.2] text-[#111] [font-family:var(--font-montserrat-alt)]">
-                      {achievement.title}
-                    </h3>
-                    <p className="mt-1 text-[14px] font-semibold text-[#666] [font-family:var(--font-montserrat-alt)]">
-                      Баллы начислены за вклад в проект и участие в активности.
-                    </p>
-                  </div>
-                  <p className="text-left text-[22px] font-black text-[#111] [font-family:var(--font-unbounded)] sm:text-right">
-                    +{formatCoins(achievement.points)}
-                  </p>
-                </article>
-              ))}
-            </div>
-
-            <div className="grid gap-4">
-              <form
-                onSubmit={handleAchievementSubmit}
-                className="rounded-[18px] border border-[#D6E779] bg-[#FCFFF3] p-4 sm:p-5"
+          <div className="mt-6 grid gap-3">
+            {achievements.map((achievement, index) => (
+              <article
+                key={achievement.title}
+                className="grid gap-4 rounded-[18px] border border-[#eeeeee] bg-[#fbfbfb] p-4 sm:grid-cols-[64px_minmax(0,1fr)_120px] sm:items-center"
               >
-                <p className="text-[13px] font-black uppercase text-[#7A9411] [font-family:var(--font-montserrat-alt)]">
-                  Новая заявка
-                </p>
-                <h3 className="mt-2 text-[22px] font-black uppercase leading-tight text-[#111] [font-family:var(--font-unbounded)]">
-                  Достижение
-                </h3>
-
-                <div className="mt-5 grid gap-4">
-                  <label className="grid gap-2 text-[12px] font-black uppercase text-[#555] [font-family:var(--font-montserrat-alt)]">
-                    Название
-                    <input
-                      value={achievementTitle}
-                      onChange={(event) => setAchievementTitle(event.target.value)}
-                      maxLength={80}
-                      required
-                      className="h-12 rounded-[10px] border border-[#D6E779] bg-white px-4 text-[15px] font-bold normal-case text-[#111] outline-none transition focus:border-[#B8CB2F] [font-family:var(--font-montserrat-alt)]"
-                    />
-                  </label>
-
-                  <label className="grid gap-2 text-[12px] font-black uppercase text-[#555] [font-family:var(--font-montserrat-alt)]">
-                    Описание для куратора
-                    <textarea
-                      value={achievementDescription}
-                      onChange={(event) => setAchievementDescription(event.target.value)}
-                      maxLength={320}
-                      required
-                      rows={5}
-                      className="min-h-[132px] resize-y rounded-[10px] border border-[#D6E779] bg-white px-4 py-3 text-[15px] font-bold normal-case leading-[1.35] text-[#111] outline-none transition focus:border-[#B8CB2F] [font-family:var(--font-montserrat-alt)]"
-                    />
-                  </label>
-
-                  {achievementError ? (
-                    <p className="rounded-[10px] bg-[#FFF0F6] px-4 py-3 text-[13px] font-black text-[#E82E78] [font-family:var(--font-montserrat-alt)]">
-                      {achievementError}
-                    </p>
-                  ) : null}
-
-                  {achievementMessage ? (
-                    <p className="rounded-[10px] bg-white px-4 py-3 text-[13px] font-black text-[#7A9411] [font-family:var(--font-montserrat-alt)]">
-                      {achievementMessage}
-                    </p>
-                  ) : null}
-
-                  <button
-                    type="submit"
-                    className="inline-flex min-h-12 items-center justify-center rounded-[10px] bg-[#B8CB2F] px-6 py-3 text-[15px] font-black text-[#111] shadow-[0_10px_22px_rgba(184,203,47,0.24)] transition hover:bg-[#A5B728] [font-family:var(--font-montserrat-alt)]"
-                  >
-                    Отправить на проверку
-                  </button>
-                </div>
-              </form>
-
-              <div className="rounded-[18px] border border-[#F4D98B] bg-[#FFF8DE] p-4 sm:p-5">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-[13px] font-black uppercase text-[#8A5A00] [font-family:var(--font-montserrat-alt)]">
-                    На проверке
+                <span
+                  aria-hidden="true"
+                  className={`block size-12 ${
+                    ["bg-[#FF3E80]", "bg-[#F2C94C]", "bg-[#22A7C7]", "bg-[#7B5BC8]"][index % 4]
+                  } [mask:url('/pattern__square_flowers.png')_center/contain_no-repeat] [-webkit-mask:url('/pattern__square_flowers.png')_center/contain_no-repeat]`}
+                />
+                <div>
+                  <h3 className="text-[18px] font-black leading-[1.2] text-[#111] [font-family:var(--font-montserrat-alt)]">
+                    {achievement.title}
+                  </h3>
+                  <p className="mt-1 text-[14px] font-semibold text-[#666] [font-family:var(--font-montserrat-alt)]">
+                    Баллы начислены за вклад в проект и участие в активности.
                   </p>
-                  <span className="rounded-full bg-white px-3 py-1 text-[12px] font-black text-[#8A5A00] [font-family:var(--font-montserrat-alt)]">
-                    {pendingAchievements.length}
-                  </span>
                 </div>
-
-                <div className="mt-4 grid gap-3">
-                  {pendingAchievements.length > 0 ? (
-                    pendingAchievements.map((achievement) => (
-                      <article key={achievement.id} className="rounded-[14px] bg-white p-4">
-                        <div className="flex flex-wrap items-start justify-between gap-2">
-                          <h4 className="break-words text-[15px] font-black leading-[1.2] text-[#111] [font-family:var(--font-montserrat-alt)]">
-                            {achievement.title}
-                          </h4>
-                          <span className="rounded-full bg-[#FFF8DE] px-3 py-1 text-[11px] font-black text-[#8A5A00] [font-family:var(--font-montserrat-alt)]">
-                            {achievement.status}
-                          </span>
-                        </div>
-                        <p className="mt-2 break-words text-[13px] font-semibold leading-[1.35] text-[#555] [font-family:var(--font-montserrat-alt)]">
-                          {achievement.description}
-                        </p>
-                        <p className="mt-3 text-[12px] font-black uppercase text-[#777] [font-family:var(--font-montserrat-alt)]">
-                          {achievement.submittedAt}
-                        </p>
-                      </article>
-                    ))
-                  ) : (
-                    <p className="rounded-[14px] bg-white p-4 text-[14px] font-bold text-[#555] [font-family:var(--font-montserrat-alt)]">
-                      Заявок пока нет
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
+                <p className="text-left text-[22px] font-black text-[#111] [font-family:var(--font-unbounded)] sm:text-right">
+                  +{formatCoins(achievement.points)}
+                </p>
+              </article>
+            ))}
           </div>
         </section>
       </div>
@@ -428,8 +278,8 @@ function SpendingRow({ order, productsBySlug }: SpendingRowProps) {
   const productSummary = getOrderProductSummary(order, productsBySlug);
 
   return (
-    <article className="grid min-w-0 gap-4 rounded-[18px] border border-[#eeeeee] bg-[#fbfbfb] p-4 sm:grid-cols-[56px_minmax(0,1fr)_150px] sm:items-center">
-      <div className="grid size-12 place-items-center rounded-[14px] bg-[#FFF0F6] text-[24px] font-black text-[#E82E78] [font-family:var(--font-unbounded)]">
+    <article className="grid min-w-0 gap-4 rounded-[18px] border border-[#F6CADC] bg-[#FFF8FB] p-4 sm:grid-cols-[48px_minmax(0,1fr)_auto] sm:items-center">
+      <div className="grid size-12 place-items-center rounded-[14px] bg-white text-[24px] font-black text-[#E82E78] shadow-[inset_0_0_0_1px_rgba(232,46,120,0.18)] [font-family:var(--font-unbounded)]">
         -
       </div>
       <div className="min-w-0">
@@ -437,18 +287,18 @@ function SpendingRow({ order, productsBySlug }: SpendingRowProps) {
           <h3 className="break-words text-[18px] font-black text-[#111] [font-family:var(--font-montserrat-alt)]">
             Списание за мерч
           </h3>
-          <span className="rounded-full bg-white px-3 py-1 text-[11px] font-black uppercase text-[#777] [font-family:var(--font-montserrat-alt)]">
+          <span className="rounded-full bg-white px-3 py-1 text-[11px] font-black uppercase text-[#E82E78] [font-family:var(--font-montserrat-alt)]">
             {order.status}
           </span>
         </div>
         <p className="mt-2 break-words text-[14px] font-semibold text-[#555] [font-family:var(--font-montserrat-alt)]">
           {productSummary}
         </p>
-        <p className="mt-1 text-[13px] font-bold text-[#777] [font-family:var(--font-montserrat-alt)]">
-          {order.createdAt} · {itemCount} шт.
+        <p className="mt-1 text-[13px] font-bold text-[#8A6171] [font-family:var(--font-montserrat-alt)]">
+          {order.createdAt} · {formatOrderItemCount(itemCount)} · {order.id}
         </p>
       </div>
-      <p className="text-left text-[20px] font-black text-[#111] [font-family:var(--font-unbounded)] sm:text-right">
+      <p className="inline-flex min-h-12 items-center justify-start rounded-[12px] bg-white px-4 text-left text-[20px] font-black text-[#111] shadow-[inset_0_0_0_1px_rgba(232,46,120,0.16)] [font-family:var(--font-unbounded)] sm:justify-center sm:text-right">
         -{formatCoinsLabel(order.total)}
       </p>
     </article>
@@ -471,123 +321,6 @@ function getOrderProductSummary(order: Order, productsBySlug: ProductLookup) {
   return visibleTitles.join(", ");
 }
 
-function usePendingAchievements() {
-  return useSyncExternalStore(
-    subscribeToPendingAchievements,
-    readPendingAchievementsSnapshot,
-    () => emptyPendingAchievements,
-  );
-}
-
-function readPendingAchievementsSnapshot() {
-  if (typeof window === "undefined") {
-    return emptyPendingAchievements;
-  }
-
-  const storedValue = window.localStorage.getItem(PENDING_ACHIEVEMENTS_STORAGE_KEY);
-  const snapshotKey = storedValue || "__empty_pending_achievements__";
-
-  if (snapshotKey === pendingAchievementsSnapshotKey) {
-    return pendingAchievementsSnapshot;
-  }
-
-  pendingAchievementsSnapshot = normalizePendingAchievements(safeParse(storedValue));
-  pendingAchievementsSnapshotKey = snapshotKey;
-
-  return pendingAchievementsSnapshot;
-}
-
-function writePendingAchievements(achievements: PendingAchievement[]) {
-  if (typeof window === "undefined") {
-    return;
-  }
-
-  const normalizedAchievements = normalizePendingAchievements(achievements);
-  const serializedAchievements = JSON.stringify(normalizedAchievements);
-
-  pendingAchievementsSnapshot = normalizedAchievements;
-  pendingAchievementsSnapshotKey = serializedAchievements;
-  window.localStorage.setItem(PENDING_ACHIEVEMENTS_STORAGE_KEY, serializedAchievements);
-  window.dispatchEvent(new CustomEvent(PENDING_ACHIEVEMENTS_EVENT_NAME));
-}
-
-function subscribeToPendingAchievements(onStoreChange: () => void) {
-  function handleStorage(event: StorageEvent) {
-    if (event.key === PENDING_ACHIEVEMENTS_STORAGE_KEY) {
-      onStoreChange();
-    }
-  }
-
-  window.addEventListener("storage", handleStorage);
-  window.addEventListener(PENDING_ACHIEVEMENTS_EVENT_NAME, onStoreChange);
-
-  return () => {
-    window.removeEventListener("storage", handleStorage);
-    window.removeEventListener(PENDING_ACHIEVEMENTS_EVENT_NAME, onStoreChange);
-  };
-}
-
-function normalizePendingAchievements(value: unknown): PendingAchievement[] {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.flatMap((item, index) => {
-    if (!isRecord(item)) {
-      return [];
-    }
-
-    const title = normalizeText(item.title);
-    const description = normalizeText(item.description);
-
-    if (!title || !description) {
-      return [];
-    }
-
-    return [{
-      id: normalizeText(item.id) || `achievement-${index}`,
-      title,
-      description,
-      submittedAt: normalizeText(item.submittedAt) || "Сегодня",
-      status: "На проверке" as const,
-    }];
-  });
-}
-
-function safeParse(value: string | null): unknown {
-  if (!value) {
-    return null;
-  }
-
-  try {
-    return JSON.parse(value);
-  } catch {
-    return null;
-  }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function normalizeText(value: unknown) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function createPendingAchievementId() {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return `achievement-${crypto.randomUUID()}`;
-  }
-
-  return `achievement-${Date.now()}`;
-}
-
-function formatSubmittedAt(date: Date) {
-  return date
-    .toLocaleDateString("ru-RU", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    })
-    .replace(/\s?г\.$/, "");
+function formatOrderItemCount(count: number) {
+  return `${count} шт.`;
 }

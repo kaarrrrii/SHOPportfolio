@@ -1,9 +1,8 @@
 "use client";
 
-import { useCallback, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useSyncExternalStore } from "react";
 import type { Product, ProductCategory, ProductSizeStock } from "@/shared/data/mock";
 import { products as defaultProducts } from "@/shared/data/mock";
-import { migrateInlineMerchProductImages } from "@/shared/lib/merch-images";
 
 export type ProductCategoryItem = {
   value: ProductCategory;
@@ -20,16 +19,27 @@ const PRODUCT_STORAGE_KEY = "zazhigay-merch-products";
 const CATEGORY_STORAGE_KEY = "zazhigay-merch-categories";
 const PRODUCT_EVENT_NAME = "zazhigay-merch-products-updated";
 const CATEGORY_EVENT_NAME = "zazhigay-merch-categories-updated";
+const MERCH_STORE_API_URL = "/api/merch/store";
 const DEFAULT_SIZES: ProductSizeStock[] = [
   { size: "S 42", stock: 0 },
   { size: "M 44", stock: 0 },
   { size: "L 46", stock: 0 },
 ];
+const LEGACY_PRODUCT_IMAGE = "/merch__hero.png";
+const DEFAULT_PRODUCT_IMAGES_BY_SLUG: Record<string, string> = {
+  "futbolka-zazhigay": "/футболка.png",
+  "hudi-iskra": "/худи.png",
+  "longsliv-impuls": "/лонг.png",
+  "panama-dvizh": "/панама.png",
+  "shopper-start": "/шопер.png",
+  "stickers-flash": "/стикеры.png",
+};
 
 let productSnapshotKey: string | null = null;
 let productSnapshot: Product[] = defaultProducts;
 let categorySnapshotKey: string | null = null;
 let categorySnapshot: ProductCategoryItem[] = DEFAULT_PRODUCT_CATEGORIES;
+let merchStoreLoadPromise: Promise<void> | null = null;
 
 export class MerchStorageError extends Error {
   constructor(message: string, options?: ErrorOptions) {
@@ -55,6 +65,77 @@ function safeParse(value: string | null): unknown {
     return JSON.parse(value);
   } catch {
     return null;
+  }
+}
+
+function ensureMerchStoreLoaded() {
+  if (!merchStoreLoadPromise) {
+    merchStoreLoadPromise = loadMerchStoreFromServer().finally(() => {
+      merchStoreLoadPromise = null;
+    });
+  }
+
+  return merchStoreLoadPromise;
+}
+
+async function loadMerchStoreFromServer() {
+  const response = await fetch(MERCH_STORE_API_URL, {
+    cache: "no-store",
+  });
+
+  if (!response.ok) {
+    return;
+  }
+
+  applyMerchStoreSnapshot(await response.json());
+}
+
+async function persistMerchStoreSnapshot(nextProducts: Product[], nextCategories: ProductCategoryItem[]) {
+  const response = await fetch(MERCH_STORE_API_URL, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      products: nextProducts,
+      categories: nextCategories,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new MerchStorageError("Не удалось сохранить каталог на сервере.");
+  }
+
+  applyMerchStoreSnapshot(await response.json());
+}
+
+function applyMerchStoreSnapshot(value: unknown) {
+  if (typeof window === "undefined" || !isRecord(value)) {
+    return;
+  }
+
+  const nextCategories = normalizeCategories(value.categories);
+  const serializedCategories = JSON.stringify(nextCategories);
+
+  categorySnapshot = nextCategories;
+  categorySnapshotKey = serializedCategories;
+  safeCacheSnapshot(CATEGORY_STORAGE_KEY, serializedCategories);
+  window.dispatchEvent(new CustomEvent(CATEGORY_EVENT_NAME));
+
+  const nextProducts = normalizeProducts(value.products);
+  const serializedProducts = JSON.stringify(nextProducts);
+
+  productSnapshot = nextProducts;
+  productSnapshotKey = serializedProducts;
+  safeCacheSnapshot(PRODUCT_STORAGE_KEY, serializedProducts);
+  window.dispatchEvent(new CustomEvent(PRODUCT_EVENT_NAME));
+}
+
+function safeCacheSnapshot(key: string, value: string) {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // The server-side JSON store is authoritative; localStorage is only a cache.
   }
 }
 
@@ -130,7 +211,7 @@ export function getCategoryLabel(category: ProductCategory) {
 function slugifyTitle(title: string) {
   return title
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/[^a-z0-9а-яё]+/giu, "-")
     .replace(/^-+|-+$/g, "");
 }
 
@@ -187,24 +268,6 @@ export function readMerchCategoriesSnapshot() {
   return categorySnapshot;
 }
 
-function writeMerchCategoriesSnapshot(nextCategories: ProductCategoryItem[]) {
-  const normalizedCategories = normalizeCategories(nextCategories);
-  const serializedCategories = JSON.stringify(normalizedCategories);
-
-  try {
-    window.localStorage.setItem(CATEGORY_STORAGE_KEY, serializedCategories);
-  } catch (error) {
-    throw new MerchStorageError(
-      "Не удалось сохранить категории: данные слишком большие для хранилища браузера.",
-      { cause: error },
-    );
-  }
-
-  categorySnapshot = normalizedCategories;
-  categorySnapshotKey = serializedCategories;
-  window.dispatchEvent(new CustomEvent(CATEGORY_EVENT_NAME));
-}
-
 export function subscribeToMerchCategories(onStoreChange: () => void) {
   function handleStorage(event: StorageEvent) {
     if (event.key === CATEGORY_STORAGE_KEY) {
@@ -233,20 +296,6 @@ function createCategoryValue(label: string, existingCategories: ProductCategoryI
   }
 
   return value;
-}
-
-function reassignProductsFromCategory(categoryValue: ProductCategory, fallbackCategory: ProductCategoryItem) {
-  const nextProducts = readMerchProductsSnapshot().map((product) =>
-    product.category === categoryValue
-      ? {
-          ...product,
-          category: fallbackCategory.value,
-          categoryLabel: fallbackCategory.label,
-        }
-      : product,
-  );
-
-  writeMerchProductsSnapshot(nextProducts);
 }
 
 export function createMerchProductSlug(
@@ -290,6 +339,7 @@ function normalizeProduct(rawProduct: unknown, index: number, usedSlugs: Set<str
 
   const category = normalizeCategory(rawProduct.category);
   const description = normalizeText(rawProduct.description, "Мерч проекта Зажигай.");
+  const fallbackImageSrc = DEFAULT_PRODUCT_IMAGES_BY_SLUG[slug] || LEGACY_PRODUCT_IMAGE;
 
   return {
     slug,
@@ -298,7 +348,7 @@ function normalizeProduct(rawProduct: unknown, index: number, usedSlugs: Set<str
     categoryLabel: getCategoryLabel(category),
     description,
     price: normalizeNumber(rawProduct.price, 0),
-    imageSrc: normalizeText(rawProduct.imageSrc, "/merch__hero.png"),
+    imageSrc: normalizeProductImageSrc(rawProduct.imageSrc, fallbackImageSrc),
     sizes: normalizeProductSizes(rawProduct.sizes, rawProduct.stock),
   };
 }
@@ -312,6 +362,14 @@ function normalizeProducts(value: unknown): Product[] {
 
     return product ? [product] : [];
   });
+}
+
+function normalizeProductImageSrc(value: unknown, fallback: string) {
+  const imageSrc = normalizeText(value, fallback);
+
+  return imageSrc === LEGACY_PRODUCT_IMAGE && fallback !== LEGACY_PRODUCT_IMAGE
+    ? fallback
+    : imageSrc;
 }
 
 export function readMerchProductsSnapshot() {
@@ -330,24 +388,6 @@ export function readMerchProductsSnapshot() {
   productSnapshotKey = snapshotKey;
 
   return productSnapshot;
-}
-
-function writeMerchProductsSnapshot(nextProducts: Product[]) {
-  const normalizedProducts = normalizeProducts(nextProducts);
-  const serializedProducts = JSON.stringify(normalizedProducts);
-
-  try {
-    window.localStorage.setItem(PRODUCT_STORAGE_KEY, serializedProducts);
-  } catch (error) {
-    throw new MerchStorageError(
-      "Не удалось сохранить каталог: данные слишком большие для хранилища браузера.",
-      { cause: error },
-    );
-  }
-
-  productSnapshot = normalizedProducts;
-  productSnapshotKey = serializedProducts;
-  window.dispatchEvent(new CustomEvent(PRODUCT_EVENT_NAME));
 }
 
 export function subscribeToMerchProducts(onStoreChange: () => void) {
@@ -389,6 +429,10 @@ export function useMerchProducts() {
     () => defaultProducts,
   );
 
+  useEffect(() => {
+    void ensureMerchStoreLoaded();
+  }, []);
+
   const saveProduct = useCallback(async (nextProduct: Product) => {
     const currentProducts = readMerchProductsSnapshot();
     const existingProduct = currentProducts.some((product) => product.slug === nextProduct.slug);
@@ -396,26 +440,18 @@ export function useMerchProducts() {
       ? currentProducts.map((product) => (product.slug === nextProduct.slug ? nextProduct : product))
       : [nextProduct, ...currentProducts];
 
-    try {
-      writeMerchProductsSnapshot(await migrateInlineMerchProductImages(nextProducts));
-    } catch (error) {
-      if (isMerchStorageError(error)) {
-        throw error;
-      }
-
-      throw new MerchStorageError(
-        "Не удалось сохранить каталог: изображение не удалось перенести в хранилище браузера.",
-        { cause: error },
-      );
-    }
+    await persistMerchStoreSnapshot(nextProducts, readMerchCategoriesSnapshot());
   }, []);
 
-  const removeProduct = useCallback((productSlug: string) => {
-    writeMerchProductsSnapshot(readMerchProductsSnapshot().filter((product) => product.slug !== productSlug));
+  const removeProduct = useCallback(async (productSlug: string) => {
+    await persistMerchStoreSnapshot(
+      readMerchProductsSnapshot().filter((product) => product.slug !== productSlug),
+      readMerchCategoriesSnapshot(),
+    );
   }, []);
 
-  const resetProducts = useCallback(() => {
-    writeMerchProductsSnapshot(defaultProducts);
+  const resetProducts = useCallback(async () => {
+    await persistMerchStoreSnapshot(defaultProducts, readMerchCategoriesSnapshot());
   }, []);
 
   return {
@@ -433,7 +469,11 @@ export function useMerchCategories() {
     () => DEFAULT_PRODUCT_CATEGORIES,
   );
 
-  const addCategory = useCallback((label: string) => {
+  useEffect(() => {
+    void ensureMerchStoreLoaded();
+  }, []);
+
+  const addCategory = useCallback(async (label: string) => {
     const normalizedLabel = label.trim();
     const currentCategories = readMerchCategoriesSnapshot();
     const existingCategory = currentCategories.find(
@@ -449,12 +489,12 @@ export function useMerchCategories() {
       label: normalizedLabel,
     };
 
-    writeMerchCategoriesSnapshot([...currentCategories, nextCategory]);
+    await persistMerchStoreSnapshot(readMerchProductsSnapshot(), [...currentCategories, nextCategory]);
 
     return nextCategory;
   }, []);
 
-  const removeCategory = useCallback((categoryValue: ProductCategory) => {
+  const removeCategory = useCallback(async (categoryValue: ProductCategory) => {
     const currentCategories = readMerchCategoriesSnapshot();
 
     if (currentCategories.length <= 1) {
@@ -468,14 +508,23 @@ export function useMerchCategories() {
       return false;
     }
 
-    writeMerchCategoriesSnapshot(nextCategories);
-    reassignProductsFromCategory(categoryValue, fallbackCategory);
+    const nextProducts = readMerchProductsSnapshot().map((product) =>
+      product.category === categoryValue
+        ? {
+            ...product,
+            category: fallbackCategory.value,
+            categoryLabel: fallbackCategory.label,
+          }
+        : product,
+    );
+
+    await persistMerchStoreSnapshot(nextProducts, nextCategories);
 
     return true;
   }, []);
 
-  const resetCategories = useCallback(() => {
-    writeMerchCategoriesSnapshot(DEFAULT_PRODUCT_CATEGORIES);
+  const resetCategories = useCallback(async () => {
+    await persistMerchStoreSnapshot(readMerchProductsSnapshot(), DEFAULT_PRODUCT_CATEGORIES);
   }, []);
 
   return {

@@ -113,7 +113,7 @@ export default function MerchCatalogWidget({ productHrefBase = "/merch" }: Merch
 
   return (
     <section className="w-full">
-      <div className="mx-auto max-w-[1440px] px-5 py-12 md:px-8 md:py-16">
+      <div className="mx-auto max-w-[1440px] px-5 pb-12 pt-2 md:px-8 md:pb-16 md:pt-3">
         <div className="mb-8 flex justify-start">
           <CategoryFilters
             activeCategory={selectedCategory}

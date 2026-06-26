@@ -17,7 +17,6 @@ import {
   useMerchProducts,
   type ProductCategoryItem,
 } from "@/shared/lib/merch";
-import { saveMerchImageBlob } from "@/shared/lib/merch-images";
 import { ORDER_STATUSES, useOrderHistory, type OrderStatus } from "@/shared/lib/shop";
 
 type AdminSection = "merch" | "orders";
@@ -183,7 +182,7 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
     } catch (error) {
       showMessage(
         isMerchStorageError(error)
-          ? "Не удалось сохранить товар: изображение или каталог слишком большие. Загрузите изображение меньшего размера или удалите лишние большие фото."
+          ? "Не удалось сохранить товар на сервере. Проверьте доступность загрузки и попробуйте еще раз."
           : "Не удалось сохранить товар. Проверьте данные и попробуйте еще раз.",
         "error",
       );
@@ -196,7 +195,7 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
     setMessage(null);
   }
 
-  function handleAddCategory() {
+  async function handleAddCategory() {
     const label = categoryDraft.trim();
 
     if (!label) {
@@ -205,7 +204,7 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
     }
 
     try {
-      const category = addCategory(label);
+      const category = await addCategory(label);
 
       setCategoryDraft("");
       setForm((currentForm) => ({ ...currentForm, category: category.value }));
@@ -215,7 +214,7 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
     }
   }
 
-  function handleRemoveCategory(category: ProductCategoryItem) {
+  async function handleRemoveCategory(category: ProductCategoryItem) {
     const confirmed = window.confirm(`Удалить категорию "${category.label}"? Товары из нее перейдут в первую доступную категорию.`);
 
     if (!confirmed) {
@@ -223,7 +222,7 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
     }
 
     try {
-      const removed = removeCategory(category.value);
+      const removed = await removeCategory(category.value);
 
       showMessage(
         removed ? "Категория удалена" : "Нельзя удалить последнюю категорию",
@@ -240,7 +239,7 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
     showMessage(`Редактирование: ${product.title}`, "info");
   }
 
-  function handleRemoveProduct(product: Product) {
+  async function handleRemoveProduct(product: Product) {
     const confirmed = window.confirm(`Удалить товар "${product.title}" из каталога?`);
 
     if (!confirmed) {
@@ -248,7 +247,7 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
     }
 
     try {
-      removeProduct(product.slug);
+      await removeProduct(product.slug);
     } catch {
       showMessage("Не удалось удалить товар. Попробуйте еще раз.", "error");
       return;
@@ -1040,7 +1039,7 @@ function ImageUploadField({ imageSrc, onChange }: ImageUploadFieldProps) {
       <div className="grid gap-3 rounded-[14px] border border-[#dedede] bg-[#fbfbfb] p-3 sm:grid-cols-[116px_minmax(0,1fr)] sm:items-center">
         <div className="relative aspect-square overflow-hidden rounded-[12px] bg-white">
           <MerchImage
-            src={imageSrc || "/merch__hero.png"}
+            src={imageSrc || "/худи.png"}
             alt=""
             fill
             className="object-contain p-2"
@@ -1206,7 +1205,7 @@ function createEmptyForm(category: ProductCategory): ProductFormState {
     category,
     description: "",
     price: "0",
-    imageSrc: "/merch__hero.png",
+    imageSrc: "/худи.png",
     sizes: [
       createSizeRow("S 42", "1"),
       createSizeRow("M 44", "1"),
@@ -1258,7 +1257,7 @@ async function prepareProductImage(file: File) {
 
     if (blob.size <= MAX_PRODUCT_IMAGE_BLOB_BYTES) {
       try {
-        return await saveMerchImageBlob(blob);
+        return await uploadMerchImageBlob(blob);
       } catch (error) {
         throw new Error("PRODUCT_IMAGE_STORAGE_FAILED", { cause: error });
       }
@@ -1266,6 +1265,30 @@ async function prepareProductImage(file: File) {
   }
 
   throw new Error("PRODUCT_IMAGE_TOO_LARGE");
+}
+
+async function uploadMerchImageBlob(blob: Blob) {
+  const formData = new FormData();
+  const extension = blob.type === "image/jpeg" ? "jpg" : "webp";
+
+  formData.append("file", blob, `product.${extension}`);
+
+  const response = await fetch("/api/merch/images", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`PRODUCT_IMAGE_UPLOAD_FAILED_${response.status}`);
+  }
+
+  const payload = await response.json() as { imageSrc?: unknown };
+
+  if (typeof payload.imageSrc !== "string" || !payload.imageSrc.startsWith("/uploads/merch/")) {
+    throw new Error("PRODUCT_IMAGE_UPLOAD_INVALID_RESPONSE");
+  }
+
+  return payload.imageSrc;
 }
 
 function loadImageFromFile(file: File) {
@@ -1329,7 +1352,7 @@ function getImageUploadErrorMessage(error: unknown) {
   }
 
   if (error instanceof Error && error.message === "PRODUCT_IMAGE_STORAGE_FAILED") {
-    return "Не удалось сохранить изображение в браузере. Освободите место или выберите файл меньшего размера.";
+    return "Не удалось сохранить изображение на сервере. Проверьте доступность загрузки или выберите файл меньшего размера.";
   }
 
   return "Не удалось загрузить изображение. Попробуйте PNG, JPG или WebP.";
@@ -1364,7 +1387,7 @@ function buildProductFromForm(
     categoryLabel: getCategoryLabel(category),
     description,
     price: normalizePositiveNumber(form.price),
-    imageSrc: form.imageSrc.trim() || "/merch__hero.png",
+    imageSrc: form.imageSrc.trim() || "/худи.png",
     sizes: normalizeProductSizeRows(form.sizes),
   };
 }

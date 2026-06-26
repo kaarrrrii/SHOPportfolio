@@ -70,7 +70,7 @@ function normalizeProducts(value: unknown): Product[] {
       categoryLabel: normalizeText(rawProduct.categoryLabel, "Категория"),
       description: normalizeText(rawProduct.description, "Мерч проекта Зажигай."),
       price: normalizeNumber(rawProduct.price, 0),
-      imageSrc: normalizeText(rawProduct.imageSrc, "/merch__hero.png"),
+      imageSrc: normalizeText(rawProduct.imageSrc, "/худи.png"),
       sizes: normalizeSizes(rawProduct.sizes),
     }];
   });

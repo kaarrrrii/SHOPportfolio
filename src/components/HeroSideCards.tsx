@@ -30,8 +30,8 @@ function HeroCommunityCard() {
 
 function HeroMerchCard() {
   return (
-    <article className="relative h-[300px] rounded-[12px] bg-[#b2bf32] p-4 sm:h-[390px] sm:rounded-[18px] sm:p-5 xl:h-[520px]">
-      <h3 className="text-[24px] font-black uppercase leading-[0.95] text-black [font-family:var(--font-unbounded)] sm:text-[35px] sm:leading-[0.9]">
+    <article className="relative flex min-h-[330px] flex-col overflow-hidden rounded-[12px] bg-[#b2bf32] p-4 sm:min-h-[410px] sm:rounded-[18px] sm:p-5 xl:h-[520px]">
+      <h3 className="relative z-10 text-[24px] font-black uppercase leading-[0.95] text-black [font-family:var(--font-unbounded)] sm:text-[35px] sm:leading-[0.9]">
         Мерч,
         <br />
         который
@@ -39,20 +39,20 @@ function HeroMerchCard() {
         вдохновляет
       </h3>
 
-      <div className="relative mt-3 h-[160px] sm:mt-4 sm:h-[250px] xl:h-[320px]">
+      <div className="relative mt-2 min-h-0 flex-1 sm:mt-3">
         <Image
-          src="/merch__hero.png"
+          src="/худи.png"
           alt="Черное худи с брендом Зажигаем"
           fill
           sizes="(max-width: 1280px) 100vw, 280px"
-          className="object-contain mix-blend-multiply"
+          className="object-contain object-center mix-blend-multiply"
         />
       </div>
 
       <ActionButton
         href="/merch"
         label="Смотреть мерч"
-        className="absolute bottom-4 left-1/2 h-[46px] w-[calc(100%-32px)] max-w-[300px] -translate-x-1/2 rounded-[10px] bg-white px-4 text-[16px] font-medium text-black [font-family:var(--font-montserrat-alt)] sm:bottom-5 sm:h-[58px] sm:w-[calc(100%-40px)] sm:max-w-[330px] sm:px-5 sm:text-[22px] xl:h-[66px] xl:text-[24px]"
+        className="relative z-10 mt-3 h-[46px] w-full rounded-[10px] bg-white px-4 text-[16px] font-medium text-black [font-family:var(--font-montserrat-alt)] sm:mt-4 sm:h-[58px] sm:px-5 sm:text-[22px] xl:h-[66px] xl:text-[24px]"
       />
     </article>
   );

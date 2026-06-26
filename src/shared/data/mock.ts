@@ -83,7 +83,7 @@ export const products: Product[] = [
     categoryLabel: "Худи",
     description: "Теплое худи оверсайз с ярким принтом проекта на спине.",
     price: 499,
-    imageSrc: "/merch__hero.png",
+    imageSrc: "/худи.png",
     sizes: buildProductSizes([
       ["S 42", 3],
       ["M 44", 5],
@@ -97,7 +97,7 @@ export const products: Product[] = [
     categoryLabel: "Футболки",
     description: "Базовая футболка из плотного хлопка с фирменным принтом.",
     price: 260,
-    imageSrc: "/merch__hero.png",
+    imageSrc: "/футболка.png",
     sizes: buildProductSizes([
       ["S 42", 8],
       ["M 44", 11],
@@ -111,7 +111,7 @@ export const products: Product[] = [
     categoryLabel: "Аксессуары",
     description: "Черная панама с вышитым логотипом для активных дней.",
     price: 150,
-    imageSrc: "/merch__hero.png",
+    imageSrc: "/панама.png",
     sizes: buildProductSizes([
       ["S 42", 7],
       ["M 44", 8],
@@ -125,7 +125,7 @@ export const products: Product[] = [
     categoryLabel: "Аксессуары",
     description: "Вместительный шоппер для конспектов, ноутбука и сувениров.",
     price: 110,
-    imageSrc: "/merch__hero.png",
+    imageSrc: "/шопер.png",
     sizes: buildProductSizes([
       ["S 42", 10],
       ["M 44", 14],
@@ -139,7 +139,7 @@ export const products: Product[] = [
     categoryLabel: "Аксессуары",
     description: "Набор ярких наклеек для ноутбука, ежедневника и бейджа.",
     price: 45,
-    imageSrc: "/merch__hero.png",
+    imageSrc: "/стикеры.png",
     sizes: buildProductSizes([
       ["S 42", 26],
       ["M 44", 28],
@@ -153,7 +153,7 @@ export const products: Product[] = [
     categoryLabel: "Футболки",
     description: "Лонгслив с мягким рукавом и минималистичным знаком проекта.",
     price: 320,
-    imageSrc: "/merch__hero.png",
+    imageSrc: "/лонг.png",
     sizes: buildProductSizes([
       ["S 42", 5],
       ["M 44", 6],

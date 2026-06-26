@@ -13,7 +13,7 @@ type MerchImageProps = {
   priority?: boolean;
 };
 
-const FALLBACK_PRODUCT_IMAGE = "/merch__hero.png";
+const FALLBACK_PRODUCT_IMAGE = "/худи.png";
 
 export default function MerchImage({
   src,
