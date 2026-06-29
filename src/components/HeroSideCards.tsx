@@ -31,7 +31,7 @@ function HeroCommunityCard() {
 function HeroMerchCard() {
   return (
     <article className="relative flex min-h-[330px] flex-col overflow-hidden rounded-[12px] bg-[#b2bf32] p-4 sm:min-h-[410px] sm:rounded-[18px] sm:p-5 xl:h-[520px]">
-      <h3 className="relative z-10 text-[24px] font-black uppercase leading-[0.95] text-black [font-family:var(--font-unbounded)] sm:text-[35px] sm:leading-[0.9]">
+      <h3 className="relative z-10 text-[18px] font-black uppercase leading-[1] text-black [font-family:var(--font-unbounded)] sm:text-[24px] xl:text-[28px]">
         Мерч,
         <br />
         который
@@ -45,7 +45,7 @@ function HeroMerchCard() {
           alt="Черное худи с брендом Зажигаем"
           fill
           sizes="(max-width: 1280px) 100vw, 280px"
-          className="object-contain object-center mix-blend-multiply"
+          className="object-contain object-center"
         />
       </div>
 

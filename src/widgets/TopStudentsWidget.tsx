@@ -16,9 +16,9 @@ const MAX_VISIBLE_COUNT = 100;
 const rowTheme = {
   blue: {
     stripe: "bg-[#F2C94C]",
-    border: "border-[#F4D98B]",
-    background: "bg-[#F2FCF8]",
-    text: "text-[#8A5A00]",
+    border: "border-[#F2C94C]",
+    background: "bg-white",
+    text: "text-[#F2C94C]",
     score: "bg-[#F2C94C]",
   },
   green: {
@@ -97,14 +97,14 @@ export default function TopStudentsWidget({ students }: TopStudentsWidgetProps) 
             <button
               type="button"
               onClick={handleLoadMore}
-              className="inline-flex h-14 min-w-[230px] items-center justify-center rounded-[14px] bg-[#F2C94C] px-8 text-[17px] font-black text-[#111] shadow-[0_10px_20px_rgba(242,201,76,0.2)] transition hover:-translate-y-0.5 hover:bg-[#E4B938] [font-family:var(--font-montserrat-alt)]"
+              className="inline-flex h-14 min-w-[230px] items-center justify-center rounded-[14px] bg-[#F2C94C] px-8 text-[17px] font-black text-white shadow-[0_10px_20px_rgba(242,201,76,0.2)] transition hover:-translate-y-0.5 hover:bg-[#F2C94C] [font-family:var(--font-montserrat-alt)]"
             >
               Показать ещё
             </button>
           </div>
         ) : null}
 
-        <p className="mt-9 text-center text-[26px] font-semibold leading-tight text-[#8A5A00] [font-family:var(--font-montserrat-alt)]">
+        <p className="mt-9 text-center text-[26px] font-semibold leading-tight text-[#F2C94C] [font-family:var(--font-montserrat-alt)]">
           Движемся вместе к вершине!
         </p>
       </section>
@@ -125,28 +125,26 @@ function RatingRow({ student }: RatingRowProps) {
   return (
     <Link
       href={`/top/${student.slug}`}
-      className={`grid min-h-[84px] grid-cols-[20px_74px_minmax(0,1fr)] items-center overflow-hidden rounded-[8px] border bg-white shadow-[0_4px_14px_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] md:grid-cols-[28px_124px_124px_minmax(0,1fr)_164px_74px_94px] ${
-        isTopThree ? `${theme.border} ${theme.background} min-h-[112px]` : `${theme.border} ${theme.background}`
+      className={`grid grid-cols-[20px_74px_minmax(0,1fr)] items-center overflow-hidden rounded-[8px] border bg-white shadow-[0_4px_14px_rgba(0,0,0,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_8px_20px_rgba(0,0,0,0.08)] md:grid-cols-[28px_124px_124px_minmax(0,1fr)_164px_74px_94px] ${
+        isTopThree ? `${theme.border} ${theme.background} min-h-[128px] md:min-h-[150px]` : `${theme.border} ${theme.background} min-h-[84px]`
       }`}
     >
       <span className={`h-full w-full ${theme.stripe}`} aria-hidden="true" />
 
-      <span className={`px-4 text-left font-black leading-none ${theme.text} [font-family:var(--font-unbounded)] ${isTopThree ? "text-[50px] md:text-[62px]" : "text-[28px] md:text-[34px]"}`}>
+      <span className={`px-4 text-left font-black leading-none ${theme.text} [font-family:var(--font-unbounded)] ${isTopThree ? "text-[62px] md:text-[78px]" : "text-[28px] md:text-[34px]"}`}>
         {student.rank}
       </span>
 
       <DecorCell colorClass={theme.text} isLarge={isTopThree} variant="rhombuses" />
 
       <span className={`min-w-0 px-4 text-left font-black text-[#111] [font-family:var(--font-montserrat-alt)] ${
-        isTopThree ? "text-[20px] md:text-[25px]" : "text-[16px] md:text-[19px]"
+        isTopThree ? "text-[22px] leading-[1.12] md:text-[30px]" : "text-[16px] md:text-[19px]"
       }`}>
         <span className="block truncate">{student.name}</span>
       </span>
 
-      <span className={`mx-3 hidden min-w-[136px] rounded-[10px] px-4 py-2 text-center font-black leading-none [font-family:var(--font-unbounded)] md:block ${
-        themeName === "blue" ? "text-[#111]" : "text-white"
-      } ${
-        isTopThree ? `${theme.score} text-[25px]` : `${theme.score} text-[20px]`
+      <span className={`mx-3 hidden min-w-[136px] rounded-[10px] px-4 py-2 text-center font-black leading-none text-white [font-family:var(--font-unbounded)] md:block ${
+        isTopThree ? `${theme.score} text-[30px]` : `${theme.score} text-[20px]`
       }`}>
         {formatCoins(totalPoints)}
       </span>
@@ -157,7 +155,7 @@ function RatingRow({ student }: RatingRowProps) {
 
       <DecorCell colorClass={theme.text} alignRight variant="flowers" />
 
-      <span className={`col-span-2 col-start-2 px-4 pb-4 text-left text-[14px] font-black ${theme.text} [font-family:var(--font-unbounded)] md:hidden`}>
+      <span className={`col-span-2 col-start-2 px-4 text-left font-black ${theme.text} [font-family:var(--font-unbounded)] md:hidden ${isTopThree ? "pb-5 text-[16px]" : "pb-4 text-[14px]"}`}>
         {formatCoins(totalPoints)} баллов
       </span>
     </Link>
@@ -196,7 +194,7 @@ function DecorCell({ colorClass, isLarge = false, alignRight = false, variant }:
   return (
     <span className={`hidden md:flex ${alignRight ? "justify-center" : "justify-start"} ${colorClass}`} aria-hidden="true">
       <span
-        className={`${isLarge ? "size-[78px]" : "size-14"} bg-current [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:contain] ${maskClass}`}
+        className={`${isLarge ? "size-[92px]" : "size-14"} bg-current [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:contain] ${maskClass}`}
       />
     </span>
   );

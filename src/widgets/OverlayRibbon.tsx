@@ -14,14 +14,14 @@ export default function OverlayRibbon({
   textClassName,
 }: OverlayRibbonProps) {
   const resolvedClassName = [
-    "inline-flex items-center gap-3 rounded-[8px] px-4 py-3",
-    className,
+    "inline-flex items-center rounded-[8px]",
+    className || "gap-3 px-4 py-3",
   ]
     .filter(Boolean)
     .join(" ");
   const resolvedTextClassName = [
-    "text-[26px] font-bold uppercase leading-[0.95] tracking-[0.01em] text-white [font-family:var(--font-unbounded)]",
-    textClassName,
+    "font-bold uppercase tracking-[0.01em] [font-family:var(--font-unbounded)]",
+    textClassName || "text-[26px] leading-[0.95] text-white",
   ]
     .filter(Boolean)
     .join(" ");

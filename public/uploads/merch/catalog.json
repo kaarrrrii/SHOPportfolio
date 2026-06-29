@@ -1,0 +1,148 @@
+{
+  "products": [
+    {
+      "slug": "hudi-iskra",
+      "title": "Худи «Искра»",
+      "category": "hoodies",
+      "categoryLabel": "Худи",
+      "description": "Теплое худи оверсайз с ярким принтом проекта на спине.",
+      "price": 499,
+      "imageSrc": "/худи.png",
+      "sizes": [
+        {
+          "size": "S 42",
+          "stock": 3
+        },
+        {
+          "size": "M 44",
+          "stock": 5
+        },
+        {
+          "size": "L 46",
+          "stock": 4
+        }
+      ]
+    },
+    {
+      "slug": "futbolka-zazhigay",
+      "title": "Футболка «Зажигай»",
+      "category": "tshirts",
+      "categoryLabel": "Футболки",
+      "description": "Базовая футболка из плотного хлопка с фирменным принтом.",
+      "price": 260,
+      "imageSrc": "/футболка.png",
+      "sizes": [
+        {
+          "size": "S 42",
+          "stock": 8
+        },
+        {
+          "size": "M 44",
+          "stock": 11
+        },
+        {
+          "size": "L 46",
+          "stock": 8
+        }
+      ]
+    },
+    {
+      "slug": "panama-dvizh",
+      "title": "Панама «Движ»",
+      "category": "accessories",
+      "categoryLabel": "Аксессуары",
+      "description": "Черная панама с вышитым логотипом для активных дней.",
+      "price": 150,
+      "imageSrc": "/панама.png",
+      "sizes": [
+        {
+          "size": "S 42",
+          "stock": 7
+        },
+        {
+          "size": "M 44",
+          "stock": 8
+        },
+        {
+          "size": "L 46",
+          "stock": 4
+        }
+      ]
+    },
+    {
+      "slug": "shopper-start",
+      "title": "Шоппер «Старт»",
+      "category": "accessories",
+      "categoryLabel": "Аксессуары",
+      "description": "Вместительный шоппер для конспектов, ноутбука и сувениров.",
+      "price": 110,
+      "imageSrc": "/шопер.png",
+      "sizes": [
+        {
+          "size": "S 42",
+          "stock": 10
+        },
+        {
+          "size": "M 44",
+          "stock": 14
+        },
+        {
+          "size": "L 46",
+          "stock": 10
+        }
+      ]
+    },
+    {
+      "slug": "stickers-flash",
+      "title": "Стикерпак «Вспышка»",
+      "category": "accessories",
+      "categoryLabel": "Аксессуары",
+      "description": "Набор ярких наклеек для ноутбука, ежедневника и бейджа.",
+      "price": 45,
+      "imageSrc": "/стикеры.png",
+      "sizes": [
+        {
+          "size": "20 шт",
+          "stock": 5
+        }
+      ]
+    },
+    {
+      "slug": "longsliv-impuls",
+      "title": "Лонгслив «Импульс»",
+      "category": "tshirts",
+      "categoryLabel": "Футболки",
+      "description": "Лонгслив с мягким рукавом и минималистичным знаком проекта.",
+      "price": 320,
+      "imageSrc": "/лонг.png",
+      "sizes": [
+        {
+          "size": "S 42",
+          "stock": 5
+        },
+        {
+          "size": "M 44",
+          "stock": 6
+        },
+        {
+          "size": "L 46",
+          "stock": 5
+        }
+      ]
+    }
+  ],
+  "categories": [
+    {
+      "value": "hoodies",
+      "label": "Худи"
+    },
+    {
+      "value": "tshirts",
+      "label": "Футболки"
+    },
+    {
+      "value": "accessories",
+      "label": "Аксессуары"
+    }
+  ]
+}

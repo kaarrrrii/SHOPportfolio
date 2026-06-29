@@ -11,12 +11,133 @@
 
   html {
     scroll-padding-top: 96px;
+    scroll-behavior: smooth;
   }
 
   body {
     min-height: 100vh;
     background: #ffffff;
     color: #111111;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+  }
+
+  ::selection {
+    background: rgba(255, 62, 128, 0.22);
+  }
+
+  :where(h1, h2, h3, h4) {
+    overflow-wrap: normal;
+    text-wrap: balance;
+    word-break: normal;
+    hyphens: none;
+  }
+
+  :where(p, span, strong, label, button, a) {
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+  }
+
+  :where(button, [role="button"], a[class*="inline-flex"], a[class*="inline-grid"]) {
+    max-width: 100%;
+    min-width: 0;
+    white-space: nowrap;
+  }
+
+  :where(button, [role="button"], a[class*="inline-flex"], a[class*="inline-grid"]) > :where(span, strong) {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .page-transition-shell {
+    min-height: 100vh;
+  }
+
+  :where(a[href], button, [role="button"], summary, input, textarea, select) {
+    transition-duration: 220ms;
+    transition-property: background-color, border-color, color, box-shadow, opacity, transform, filter;
+    transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  :where(button, [role="button"], input, textarea, select):focus-visible,
+  :where(a[href]):focus-visible {
+    outline: 3px solid rgba(255, 62, 128, 0.32);
+    outline-offset: 3px;
+  }
+
+  :where(input, textarea, select):focus {
+    box-shadow: 0 8px 22px rgba(34, 167, 199, 0.12);
+    transform: translateY(-1px);
+  }
+
+  :where(button, [role="button"], a[href]) {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where(button, [role="button"], a[href]):not(:disabled):active {
+    filter: saturate(1.08);
+    transform: translateY(1px) scale(0.985);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    :where(button, [role="button"], a[href]):not(:disabled):hover {
+      filter: saturate(1.06);
+    }
+
+    :where(a[href][class*="rounded"], button[class*="rounded"], [role="button"][class*="rounded"]):not(:disabled):hover {
+      box-shadow: 0 12px 28px rgba(17, 17, 17, 0.12);
+    }
+  }
+
+  .admin-order-card {
+    transition:
+      border-color 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      box-shadow 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      background-color 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .admin-order-line,
+  .admin-status-panel {
+    transition:
+      border-color 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      box-shadow 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      background-color 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .admin-status-badge {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .admin-status-badge::after {
+    content: "";
+    position: absolute;
+    inset: -40% auto -40% -55%;
+    width: 48%;
+    transform: translateX(-120%) rotate(18deg);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.46), transparent);
+    transition: transform 520ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .admin-order-card:hover {
+      transform: translateY(-3px);
+    }
+
+    .admin-order-line:hover,
+    .admin-status-panel:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(17, 17, 17, 0.08);
+    }
+
+    .admin-status-badge:hover::after {
+      transform: translateX(320%) rotate(18deg);
+    }
   }
 
   main {
@@ -389,18 +510,177 @@
     opacity: 0.58;
   }
 
+  .about-community-ribbon {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    display: inline-flex;
+    max-width: min(248px, calc(100% - 24px));
+    align-items: center;
+    gap: 6px;
+    border-radius: 8px;
+    background: #f2c94c;
+    padding: 9px 11px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+  }
+
+  .about-community-ribbon__icon {
+    display: block;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    background: #ffffff;
+    opacity: 0.95;
+    mask: url("/elements__circles.png") center / contain no-repeat;
+    -webkit-mask: url("/elements__circles.png") center / contain no-repeat;
+  }
+
+  .about-community-ribbon__text {
+    max-width: 198px;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.08;
+    text-wrap: balance;
+  }
+
+  @media (min-width: 480px) {
+    .about-community-ribbon {
+      max-width: 300px;
+      padding: 10px 13px;
+    }
+
+    .about-community-ribbon__text {
+      max-width: 246px;
+      font-size: 13px;
+    }
+  }
+
+  @media (min-width: 640px) {
+    .about-community-ribbon {
+      bottom: 16px;
+      left: 16px;
+      max-width: 390px;
+      gap: 8px;
+      padding: 10px 14px;
+    }
+
+    .about-community-ribbon__icon {
+      width: 28px;
+      height: 28px;
+      flex-basis: 28px;
+    }
+
+    .about-community-ribbon__text {
+      max-width: 322px;
+      font-size: 17px;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .about-community-ribbon {
+      bottom: 20px;
+      left: 20px;
+      max-width: 460px;
+      gap: 10px;
+      padding: 12px 16px;
+    }
+
+    .about-community-ribbon__icon {
+      width: 36px;
+      height: 36px;
+      flex-basis: 36px;
+    }
+
+    .about-community-ribbon__text {
+      max-width: 386px;
+      font-size: 21px;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .about-community-ribbon {
+      bottom: 24px;
+      left: 24px;
+      max-width: 630px;
+      gap: 12px;
+      padding: 16px 20px;
+    }
+
+    .about-community-ribbon__icon {
+      width: 48px;
+      height: 48px;
+      flex-basis: 48px;
+    }
+
+    .about-community-ribbon__text {
+      max-width: 545px;
+      font-size: 29px;
+      line-height: 1.04;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .about-community-ribbon {
+      max-width: 760px;
+    }
+
+    .about-community-ribbon__icon {
+      width: 64px;
+      height: 64px;
+      flex-basis: 64px;
+    }
+
+    .about-community-ribbon__text {
+      max-width: 660px;
+      font-size: 35px;
+    }
+  }
+
   main > * {
     position: relative;
     z-index: 1;
   }
 
   @media (prefers-reduced-motion: no-preference) {
+    .page-transition-shell {
+      animation: route-shell-enter 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
     main {
-      animation: page-enter 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      animation: page-enter 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
     }
 
     main > * {
-      animation: page-content-enter 380ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      animation: page-content-enter 460ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .admin-order-card {
+      animation: admin-order-card-enter 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .admin-status-panel {
+      animation: admin-status-panel-enter 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .admin-status-badge {
+      animation: admin-status-badge-pop 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+
+    .admin-status-dot {
+      animation: admin-status-dot-pulse 1800ms ease-in-out infinite;
+    }
+  }
+
+  @keyframes route-shell-enter {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.995);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
     }
   }
 
@@ -425,6 +705,55 @@
     to {
       opacity: 1;
       transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes admin-order-card-enter {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.985);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes admin-status-panel-enter {
+    from {
+      opacity: 0;
+      transform: translateX(12px) scale(0.985);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+    }
+  }
+
+  @keyframes admin-status-badge-pop {
+    from {
+      opacity: 0;
+      transform: translateY(4px) scale(0.94);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes admin-status-dot-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.36);
+      transform: scale(1);
+    }
+
+    50% {
+      box-shadow: 0 0 0 7px rgba(255, 255, 255, 0);
+      transform: scale(1.14);
     }
   }
 

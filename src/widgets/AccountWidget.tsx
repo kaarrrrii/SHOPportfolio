@@ -284,18 +284,18 @@ function SpendingRow({ order, productsBySlug }: SpendingRowProps) {
       </div>
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          <h3 className="break-words text-[18px] font-black text-[#111] [font-family:var(--font-montserrat-alt)]">
+          <h3 className="text-[18px] font-black text-[#111] [font-family:var(--font-montserrat-alt)]">
             Списание за мерч
           </h3>
           <span className="rounded-full bg-white px-3 py-1 text-[11px] font-black uppercase text-[#E82E78] [font-family:var(--font-montserrat-alt)]">
             {order.status}
           </span>
         </div>
-        <p className="mt-2 break-words text-[14px] font-semibold text-[#555] [font-family:var(--font-montserrat-alt)]">
+        <p className="mt-2 text-[14px] font-semibold text-[#555] [font-family:var(--font-montserrat-alt)]">
           {productSummary}
         </p>
         <p className="mt-1 text-[13px] font-bold text-[#8A6171] [font-family:var(--font-montserrat-alt)]">
-          {order.createdAt} · {formatOrderItemCount(itemCount)} · {order.id}
+          {order.createdAt} · {formatOrderItemCount(itemCount)}
         </p>
       </div>
       <p className="inline-flex min-h-12 items-center justify-start rounded-[12px] bg-white px-4 text-left text-[20px] font-black text-[#111] shadow-[inset_0_0_0_1px_rgba(232,46,120,0.16)] [font-family:var(--font-unbounded)] sm:justify-center sm:text-right">

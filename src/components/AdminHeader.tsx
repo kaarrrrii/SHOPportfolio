@@ -141,7 +141,7 @@ function LogoutButton({ onClick, className }: LogoutButtonProps) {
     <button
       type="button"
       onClick={onClick}
-      className={`h-11 cursor-pointer items-center justify-center rounded-[10px] bg-[#FF3E80] px-4 text-[15px] font-black text-white shadow-[0_8px_18px_rgba(255,62,128,0.24)] transition hover:bg-[#E82E78] [font-family:var(--font-montserrat-alt)] ${className || "inline-flex"}`}
+      className={`h-11 cursor-pointer items-center justify-center whitespace-nowrap rounded-[10px] bg-[#FF3E80] px-4 text-[15px] font-black text-white shadow-[0_8px_18px_rgba(255,62,128,0.24)] transition hover:bg-[#E82E78] [font-family:var(--font-montserrat-alt)] ${className || "inline-flex"}`}
     >
       Выйти
     </button>
@@ -169,7 +169,7 @@ function AdminNavLink({
     <Link
       href={href}
       onClick={onClick}
-      className={`inline-flex cursor-pointer items-center rounded-[10px] px-3 py-2 text-[16px] font-semibold transition-colors [font-family:var(--font-montserrat-alt)] ${
+      className={`inline-flex cursor-pointer items-center whitespace-nowrap rounded-[10px] px-3 py-2 text-[16px] font-semibold transition-colors [font-family:var(--font-montserrat-alt)] ${
         isActive ? accent.active : accent.inactive
       } ${className}`}
     >

@@ -52,9 +52,53 @@ type AdminMessage = {
   text: string;
 };
 
+type AdminOrderStatusTheme = {
+  card: string;
+  badge: string;
+  tile: string;
+  tileValue: string;
+  panel: string;
+  select: string;
+  actionButton: string;
+  dot: string;
+};
+
 const MAX_PRODUCT_IMAGE_SOURCE_BYTES = 4 * 1024 * 1024;
 const MAX_PRODUCT_IMAGE_BLOB_BYTES = 650_000;
 const PRODUCT_IMAGE_MAX_SIDE = 1200;
+
+const ADMIN_ORDER_STATUS_THEMES: Record<OrderStatus, AdminOrderStatusTheme> = {
+  Оформлен: {
+    card: "border-[#F7B7D4] bg-[#FFF7FB] shadow-[0_12px_34px_rgba(255,62,128,0.10)] hover:border-[#FF3E80] hover:shadow-[0_18px_40px_rgba(255,62,128,0.20)]",
+    badge: "border-[#F7B7D4] bg-[#FF3E80] text-white shadow-[0_8px_18px_rgba(255,62,128,0.24)]",
+    tile: "border-[#F7B7D4] bg-[#FFF0F6]",
+    tileValue: "text-[#E82E78]",
+    panel: "border-[#F7B7D4] bg-[#FFF7FB]",
+    select: "border-[#F7B7D4] bg-white focus:border-[#FF3E80] focus:ring-2 focus:ring-[#FF3E80]/20",
+    actionButton: "bg-[#FF3E80] text-white shadow-[0_10px_20px_rgba(255,62,128,0.24)] hover:bg-[#E82E78]",
+    dot: "bg-[#FF3E80]",
+  },
+  "Готов к выдаче": {
+    card: "border-[#9ADDEB] bg-[#F2FDFF] shadow-[0_12px_34px_rgba(34,167,199,0.10)] hover:border-[#22A7C7] hover:shadow-[0_18px_40px_rgba(34,167,199,0.20)]",
+    badge: "border-[#9ADDEB] bg-[#22A7C7] text-white shadow-[0_8px_18px_rgba(34,167,199,0.24)]",
+    tile: "border-[#9ADDEB] bg-[#F2FDFF]",
+    tileValue: "text-[#1688A3]",
+    panel: "border-[#9ADDEB] bg-[#F2FDFF]",
+    select: "border-[#9ADDEB] bg-white focus:border-[#22A7C7] focus:ring-2 focus:ring-[#22A7C7]/20",
+    actionButton: "bg-[#22A7C7] text-white shadow-[0_10px_20px_rgba(34,167,199,0.24)] hover:bg-[#1688A3]",
+    dot: "bg-[#22A7C7]",
+  },
+  Получен: {
+    card: "border-[#9BE3B3] bg-[#F1FFF6] shadow-[0_12px_34px_rgba(47,184,109,0.10)] hover:border-[#2FB86D] hover:shadow-[0_18px_40px_rgba(47,184,109,0.20)]",
+    badge: "border-[#9BE3B3] bg-[#2FB86D] text-white shadow-[0_8px_18px_rgba(47,184,109,0.24)]",
+    tile: "border-[#9BE3B3] bg-[#F1FFF6]",
+    tileValue: "text-[#15834D]",
+    panel: "border-[#9BE3B3] bg-[#F1FFF6]",
+    select: "border-[#9BE3B3] bg-white focus:border-[#2FB86D] focus:ring-2 focus:ring-[#2FB86D]/20",
+    actionButton: "bg-[#2FB86D] text-white shadow-[0_10px_20px_rgba(47,184,109,0.24)] hover:bg-[#15834D]",
+    dot: "bg-[#2FB86D]",
+  },
+};
 
 let sizeRowSeed = 0;
 
@@ -430,10 +474,15 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
 
           <div className="grid gap-4">
             {orders.length > 0 ? (
-              orders.map((order) => (
+              orders.map((order, index) => {
+                const safeStatus = getSafeOrderStatus(order.status);
+                const statusTheme = getAdminOrderStatusTheme(safeStatus);
+
+                return (
                 <article
                   key={order.id}
-                  className="grid min-w-0 gap-4 rounded-[18px] border border-[#eeeeee] bg-[#fbfbfb] p-3 sm:p-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start"
+                  className={`admin-order-card grid min-w-0 gap-4 rounded-[18px] border p-3 transition sm:p-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start ${statusTheme.card}`}
+                  style={{ animationDelay: `${Math.min(index * 45, 220)}ms` }}
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -448,12 +497,13 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
                           {order.studentGroup}
                         </p>
                       </div>
+                      <AdminOrderStatusBadge status={safeStatus} />
                     </div>
 
                     <div className="mt-4 grid gap-2 sm:grid-cols-4">
                       <OrderInfoTile label="Дата" value={order.createdAt} />
                       <OrderInfoTile label="Выдача" value={order.pickup} />
-                      <OrderInfoTile label="Статус" value={order.status} />
+                      <OrderStatusTile status={safeStatus} />
                       <OrderInfoTile label="Списано" value={formatCoinsLabel(order.total)} />
                     </div>
 
@@ -464,7 +514,7 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
                         return (
                           <div
                             key={`${order.id}-${item.productSlug}-${item.size}`}
-                            className="grid min-w-0 gap-3 rounded-[12px] bg-white p-3 text-[14px] font-bold text-[#555] shadow-[0_4px_14px_rgba(0,0,0,0.04)] [font-family:var(--font-montserrat-alt)] sm:grid-cols-[64px_minmax(0,1fr)_auto] sm:items-center"
+                            className="admin-order-line grid min-w-0 gap-3 rounded-[12px] bg-white p-3 text-[14px] font-bold text-[#555] shadow-[0_4px_14px_rgba(0,0,0,0.04)] [font-family:var(--font-montserrat-alt)] sm:grid-cols-[64px_minmax(0,1fr)_auto] sm:items-center"
                           >
                             {product ? (
                               <Link
@@ -488,12 +538,12 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
                               {product ? (
                                 <Link
                                   href={`/admin/showcase/${product.slug}`}
-                                  className="break-words font-black text-[#111] transition hover:text-[#8A5A00]"
+                                  className="font-black text-[#111] transition hover:text-[#8A5A00]"
                                 >
                                   {product.title}
                                 </Link>
                               ) : (
-                                <p className="break-words font-black text-[#111]">
+                                <p className="font-black text-[#111]">
                                   Товар удален
                                 </p>
                               )}
@@ -512,13 +562,14 @@ export default function AdminMerchWidget({ section = "merch" }: AdminMerchWidget
                   </div>
 
                   <OrderStatusControl
-                    key={`${order.id}-${getSafeOrderStatus(order.status)}`}
+                    key={`${order.id}-${safeStatus}`}
                     orderId={order.id}
-                    status={getSafeOrderStatus(order.status)}
+                    status={safeStatus}
                     onConfirm={handleConfirmOrderStatus}
                   />
                 </article>
-              ))
+                );
+              })
             ) : (
               <div className="rounded-[16px] border border-dashed border-[#d8d8d8] bg-[#fafafa] p-8 text-center">
                 <p className="text-[22px] font-black uppercase text-[#111] [font-family:var(--font-unbounded)]">
@@ -624,7 +675,7 @@ function MetricTile({ label, value }: MetricTileProps) {
       <p className="text-[12px] font-black uppercase text-[#777] [font-family:var(--font-montserrat-alt)]">
         {label}
       </p>
-      <p className="mt-1 break-words text-[28px] font-black text-[#111] [font-family:var(--font-unbounded)] sm:text-[30px]">
+      <p className="mt-1 text-[28px] font-black text-[#111] [font-family:var(--font-unbounded)] sm:text-[30px]">
         {value}
       </p>
     </div>
@@ -642,8 +693,39 @@ function OrderInfoTile({ label, value }: OrderInfoTileProps) {
       <p className="text-[10px] font-black uppercase text-[#777] [font-family:var(--font-montserrat-alt)]">
         {label}
       </p>
-      <p className="mt-1 break-words text-[12px] font-black leading-[1.25] text-[#111] [font-family:var(--font-montserrat-alt)]">
+      <p className="mt-1 text-[12px] font-black leading-[1.25] text-[#111] [font-family:var(--font-montserrat-alt)]">
         {value}
+      </p>
+    </div>
+  );
+}
+
+type AdminOrderStatusBadgeProps = {
+  status: OrderStatus;
+};
+
+function AdminOrderStatusBadge({ status }: AdminOrderStatusBadgeProps) {
+  const theme = getAdminOrderStatusTheme(status);
+
+  return (
+    <span className={`admin-status-badge inline-flex min-h-9 shrink-0 items-center gap-2 rounded-full border px-3 py-2 text-[12px] font-black uppercase tracking-[0.01em] [font-family:var(--font-montserrat-alt)] ${theme.badge}`}>
+      <span className="admin-status-dot size-2 rounded-full bg-white/90" />
+      {status}
+    </span>
+  );
+}
+
+function OrderStatusTile({ status }: AdminOrderStatusBadgeProps) {
+  const theme = getAdminOrderStatusTheme(status);
+
+  return (
+    <div className={`min-w-0 rounded-[12px] border px-3 py-2 shadow-[0_4px_14px_rgba(0,0,0,0.04)] ${theme.tile}`}>
+      <p className="text-[10px] font-black uppercase text-[#777] [font-family:var(--font-montserrat-alt)]">
+        Статус
+      </p>
+      <p className={`mt-1 inline-flex items-center gap-2 text-[12px] font-black leading-[1.25] [font-family:var(--font-montserrat-alt)] ${theme.tileValue}`}>
+        <span className={`admin-status-dot size-2 rounded-full ${theme.dot}`} />
+        {status}
       </p>
     </div>
   );
@@ -1151,10 +1233,10 @@ function ProductAdminRow({ product, isEditing, onEdit, onRemove }: ProductAdminR
             <h3 className="truncate text-[18px] font-black text-[#111] [font-family:var(--font-unbounded)]">
               {product.title}
             </h3>
-            <p className="mt-1 break-words text-[13px] font-bold text-[#666] [font-family:var(--font-montserrat-alt)]">
+            <p className="mt-1 text-[13px] font-bold text-[#666] [font-family:var(--font-montserrat-alt)]">
               {product.categoryLabel} · {formatCoinsLabel(product.price)} · остаток {getProductTotalStock(product)}
             </p>
-            <p className="mt-1 break-words text-[12px] font-bold text-[#777] [font-family:var(--font-montserrat-alt)]">
+            <p className="mt-1 text-[12px] font-bold text-[#777] [font-family:var(--font-montserrat-alt)]">
               {formatProductSizeStocks(product.sizes)}
             </p>
           </div>
@@ -1507,15 +1589,27 @@ type OrderStatusControlProps = {
 function OrderStatusControl({ orderId, status, onConfirm }: OrderStatusControlProps) {
   const [selectedStatus, setSelectedStatus] = useState<OrderStatus>(status);
   const isChanged = selectedStatus !== status;
+  const currentTheme = getAdminOrderStatusTheme(status);
+  const selectedTheme = getAdminOrderStatusTheme(selectedStatus);
 
   return (
-    <div className="rounded-[16px] bg-white p-4">
+    <div className={`admin-status-panel rounded-[16px] border p-4 transition ${selectedTheme.panel}`}>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <span className="text-[12px] font-black uppercase text-[#777] [font-family:var(--font-montserrat-alt)]">
+          Текущий
+        </span>
+        <span className={`admin-status-badge inline-flex min-h-8 items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-black uppercase tracking-[0.01em] [font-family:var(--font-montserrat-alt)] ${currentTheme.badge}`}>
+          <span className="admin-status-dot size-2 rounded-full bg-white/90" />
+          {status}
+        </span>
+      </div>
+
       <label className="grid gap-2 text-[12px] font-black uppercase text-[#777] [font-family:var(--font-montserrat-alt)]">
         Сменить статус
         <select
           value={selectedStatus}
           onChange={(event) => setSelectedStatus(event.target.value as OrderStatus)}
-          className="h-12 w-full rounded-[10px] border border-[#dedede] bg-[#fbfbfb] px-4 text-[15px] font-black normal-case text-[#111] outline-none transition focus:border-[#7B5BC8] focus:bg-white [font-family:var(--font-montserrat-alt)]"
+          className={`h-12 w-full rounded-[10px] border px-4 text-[15px] font-black normal-case text-[#111] outline-none transition [font-family:var(--font-montserrat-alt)] ${selectedTheme.select}`}
         >
           {ORDER_STATUSES.map((statusItem) => (
             <option key={statusItem} value={statusItem}>
@@ -1529,12 +1623,18 @@ function OrderStatusControl({ orderId, status, onConfirm }: OrderStatusControlPr
         type="button"
         onClick={() => onConfirm(orderId, status, selectedStatus)}
         disabled={!isChanged}
-        className="mt-4 inline-flex h-11 w-full items-center justify-center rounded-[10px] bg-[#8B3DFF] px-4 text-[14px] font-black text-white transition hover:bg-[#6F22E8] disabled:cursor-not-allowed disabled:bg-[#d8d8d8] disabled:text-[#777] [font-family:var(--font-montserrat-alt)]"
+        className={`mt-4 inline-flex h-11 w-full items-center justify-center rounded-[10px] px-4 text-[14px] font-black transition [font-family:var(--font-montserrat-alt)] ${
+          isChanged ? selectedTheme.actionButton : "cursor-not-allowed bg-[#d8d8d8] text-[#777]"
+        }`}
       >
         Подтвердить статус
       </button>
     </div>
   );
+}
+
+function getAdminOrderStatusTheme(status: OrderStatus) {
+  return ADMIN_ORDER_STATUS_THEMES[status];
 }
 
 function getSafeOrderStatus(status: string): OrderStatus {

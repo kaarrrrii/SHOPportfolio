@@ -105,13 +105,13 @@ export default function OrdersHistoryWidget() {
                             className="object-contain p-2"
                           />
                         ) : (
-                          <div className="grid h-full place-items-center bg-[#FFF0F6] px-2 text-center text-[11px] font-black uppercase leading-[1.15] text-[#E82E78] [font-family:var(--font-montserrat-alt)]">
+                          <div className="grid h-full place-items-center whitespace-nowrap bg-[#FFF0F6] px-1 text-center text-[9px] font-black uppercase leading-none text-[#E82E78] [font-family:var(--font-montserrat-alt)] sm:text-[10px]">
                             Нет в каталоге
                           </div>
                         )}
                       </div>
                       <div className="min-w-0">
-                        <p className="break-words text-[17px] font-black text-[#111] [font-family:var(--font-unbounded)]">
+                        <p className="text-[17px] font-black text-[#111] [font-family:var(--font-unbounded)]">
                           {product?.title || "Товар больше недоступен"}
                         </p>
                         <p className="mt-1 text-[14px] font-semibold text-[#666] [font-family:var(--font-montserrat-alt)]">

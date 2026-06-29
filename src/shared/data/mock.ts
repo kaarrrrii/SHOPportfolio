@@ -209,7 +209,7 @@ export const orderHistory: Order[] = [
     timeline: ["Оформлен", "Готов к выдаче"],
   },
   {
-    id: "ZG-2026-038",
+    id: "order-history-038",
     createdAt: "28 апреля 2026",
     studentName: "Смирнова Анна Андреевна",
     studentGroup: "24АС-1",

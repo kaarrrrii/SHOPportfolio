@@ -12,13 +12,13 @@ export default function ActionButton({
   href,
 }: ActionButtonProps) {
   const baseClassName =
-    "inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap";
+    "inline-flex min-w-0 cursor-pointer items-center justify-center gap-2 overflow-hidden whitespace-nowrap";
   const resolvedClassName = [baseClassName, className].filter(Boolean).join(" ");
 
   if (href) {
     return (
       <Link href={href} className={resolvedClassName}>
-        <span>{label}</span>
+        <span className="min-w-0 truncate">{label}</span>
         <ArrowRightIcon />
       </Link>
     );
@@ -26,7 +26,7 @@ export default function ActionButton({
 
   return (
     <button type="button" className={resolvedClassName}>
-      <span>{label}</span>
+      <span className="min-w-0 truncate">{label}</span>
       <ArrowRightIcon />
     </button>
   );

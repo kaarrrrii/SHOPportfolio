@@ -70,9 +70,13 @@ function safeParse(value: string | null): unknown {
 
 function ensureMerchStoreLoaded() {
   if (!merchStoreLoadPromise) {
-    merchStoreLoadPromise = loadMerchStoreFromServer().finally(() => {
-      merchStoreLoadPromise = null;
-    });
+    merchStoreLoadPromise = loadMerchStoreFromServer()
+      .catch(() => {
+        // Keep the local snapshot if the dev server/API is briefly unavailable.
+      })
+      .finally(() => {
+        merchStoreLoadPromise = null;
+      });
   }
 
   return merchStoreLoadPromise;

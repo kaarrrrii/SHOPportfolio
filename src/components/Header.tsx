@@ -169,7 +169,7 @@ function LogoutButton({ onClick, className }: LogoutButtonProps) {
     <button
       type="button"
       onClick={onClick}
-      className={`h-11 cursor-pointer items-center justify-center rounded-[10px] border border-[#ececec] bg-white px-4 text-[15px] font-black text-[#1f1f1f] shadow-[0_4px_18px_rgba(0,0,0,0.08)] transition hover:border-[#8B3DFF] hover:text-[#6F22E8] [font-family:var(--font-montserrat-alt)] ${className || "inline-flex"}`}
+      className={`h-11 cursor-pointer items-center justify-center whitespace-nowrap rounded-[10px] border border-[#ececec] bg-white px-4 text-[15px] font-black text-[#1f1f1f] shadow-[0_4px_18px_rgba(0,0,0,0.08)] transition hover:border-[#8B3DFF] hover:text-[#6F22E8] [font-family:var(--font-montserrat-alt)] ${className || "inline-flex"}`}
     >
       Выйти
     </button>
@@ -185,10 +185,12 @@ type AccountShortcutProps = {
 
 function AccountShortcut({ isActive, isAuthorized, onClick, className }: AccountShortcutProps) {
   const resolvedClassName = [
-    "h-11 items-center justify-center rounded-[10px] px-4 text-[15px] font-black transition [font-family:var(--font-montserrat-alt)]",
-    isActive
-      ? "bg-[#FF3E80] text-white shadow-[0_8px_18px_rgba(255,62,128,0.24)]"
-      : "border border-[#ececec] bg-white text-[#1f1f1f] shadow-[0_4px_18px_rgba(0,0,0,0.08)] hover:border-[#FF3E80] hover:text-[#E82E78]",
+    "h-11 items-center justify-center whitespace-nowrap rounded-[10px] px-4 text-[15px] font-black transition [font-family:var(--font-montserrat-alt)]",
+    isAuthorized
+      ? isActive
+        ? "bg-[#FF3E80] text-white shadow-[0_8px_18px_rgba(255,62,128,0.24)]"
+        : "border border-[#ececec] bg-white text-[#1f1f1f] shadow-[0_4px_18px_rgba(0,0,0,0.08)] hover:border-[#FF3E80] hover:text-[#E82E78]"
+      : "bg-[#FF3E80] text-white shadow-[0_8px_18px_rgba(255,62,128,0.24)] hover:bg-white hover:text-[#FF3E80] hover:shadow-[0_12px_26px_rgba(255,62,128,0.28)]",
     className || "inline-flex",
   ]
     .filter(Boolean)
@@ -222,7 +224,7 @@ function HeaderNavLink({
     <Link
       href={href}
       onClick={onClick}
-      className={`inline-flex cursor-pointer items-center rounded-[10px] px-3 py-2 text-[16px] font-semibold transition-colors [font-family:var(--font-montserrat-alt)] ${
+      className={`inline-flex cursor-pointer items-center whitespace-nowrap rounded-[10px] px-3 py-2 text-[16px] font-semibold transition-colors [font-family:var(--font-montserrat-alt)] ${
         isActive ? accent.active : accent.inactive
       } ${className}`}
     >

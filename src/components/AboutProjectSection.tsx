@@ -50,11 +50,11 @@ export default function AboutProjectSection() {
                 icon={
                   <span
                     aria-hidden="true"
-                    className="block size-[34px] bg-[#111] opacity-95 [mask:url('/elements__circles.png')_center/contain_no-repeat] [-webkit-mask:url('/elements__circles.png')_center/contain_no-repeat] sm:size-[48px] md:size-[56px]"
+                    className="about-community-ribbon__icon"
                   />
                 }
-                className="absolute bottom-3 left-3 max-w-[calc(100%-24px)] gap-2 bg-[#f2c94c] px-3 py-2 sm:bottom-6 sm:left-6 sm:max-w-[560px] sm:gap-3 sm:px-4 sm:py-3"
-                textClassName="text-[12px] leading-[1.05] text-[#111] sm:text-[20px] md:text-[27px]"
+                className="about-community-ribbon"
+                textClassName="about-community-ribbon__text"
               />
             </article>
           </aside>

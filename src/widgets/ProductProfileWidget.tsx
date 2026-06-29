@@ -39,7 +39,7 @@ export default function ProductProfileWidget({
 
   if (!product) {
     if (hasOrderedProduct && !fakeActions) {
-      return <UnavailableOrderedProduct catalogHref={catalogHref} productSlug={productSlug} />;
+      return <UnavailableOrderedProduct catalogHref={catalogHref} />;
     }
 
     return <MissingProduct catalogHref={catalogHref} />;
@@ -212,10 +212,9 @@ export default function ProductProfileWidget({
 
 type UnavailableOrderedProductProps = {
   catalogHref: string;
-  productSlug: string;
 };
 
-function UnavailableOrderedProduct({ catalogHref, productSlug }: UnavailableOrderedProductProps) {
+function UnavailableOrderedProduct({ catalogHref }: UnavailableOrderedProductProps) {
   return (
     <main className="relative overflow-hidden bg-white">
       <div className="mx-auto max-w-[1440px] px-5 py-14 md:px-8 md:py-20">
@@ -230,9 +229,6 @@ function UnavailableOrderedProduct({ catalogHref, productSlug }: UnavailableOrde
             Эта позиция осталась в истории заказа, но сейчас удалена из каталога или снята с выдачи.
             Добавить ее в корзину уже нельзя.
           </p>
-          <div className="mx-auto mt-6 max-w-[420px] rounded-[16px] bg-[#FFF0F6] px-4 py-3 text-[13px] font-black text-[#E82E78] [font-family:var(--font-montserrat-alt)]">
-            Артикул: {productSlug}
-          </div>
           <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               href="/orders"
